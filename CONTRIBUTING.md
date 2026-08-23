@@ -1,108 +1,62 @@
-# Contributing to Rust Architecture Builder
+# Contributing
 
-Thank you for your interest in contributing! This document provides guidelines and information for contributors.
+Contributions are welcome. This is a small project, so the process is short.
 
-## Getting Started
+## Getting set up
 
-1. Fork the repository
-2. Clone your fork: `git clone <your-fork-url>`
-3. Install dependencies: `npm install`
-4. Create a new branch: `git checkout -b feature/your-feature-name`
-5. Make your changes
-6. Test your changes: `npm run dev`
-7. Commit your changes: `git commit -m "Add your feature"`
-8. Push to your fork: `git push origin feature/your-feature-name`
-9. Open a Pull Request
+Requires Node 20 or newer.
 
-## Development Guidelines
-
-### Code Style
-
-- Follow the existing code style
-- Use TypeScript for type safety
-- Write meaningful commit messages
-- Add comments for complex logic
-- Keep components small and focused
-
-### Component Structure
-
-```
-components/
-  ├── ComponentName.tsx    # Component logic and JSX
-  └── README.md           # Component documentation (optional)
+```bash
+git clone https://github.com/<your-fork>/rust-base-builder.git
+cd rust-base-builder
+npm install
+npm run dev
 ```
 
-### Adding New Block Types
+## Before you open a pull request
 
-To add a new Rust block type:
+Run what CI runs:
 
-1. Add the type to `RustBlockType` in `types/rust-blocks.ts`
-2. Add a template to `BLOCK_TEMPLATES` array
-3. Update the code generator in `utils/codeGenerator.ts`
-4. Add rendering logic to `RustBlockNode.tsx` if needed
+```bash
+npm run format:check
+npm run lint
+npm run typecheck
+npm test
+npm run build
+```
 
-### Testing Changes
+If you touched anything in `components/scene/`, `utils/geometry.ts`,
+`utils/textureLoader.ts` or the lighting, also work through
+[docs/VISUAL_QA.md](./docs/VISUAL_QA.md). The test suite cannot see the render,
+and the rendering bugs this project has had all built and typechecked cleanly.
 
-Before submitting a PR:
+## What to test
 
-1. Run the development server and test manually
-2. Check for TypeScript errors: `npm run build`
-3. Check for linting errors: `npm run lint`
-4. Test the code generation feature
-5. Verify all block types work correctly
+Grid maths, placement rules and store behaviour are pure functions and belong in
+`tests/`. Rendering does not: a test asserting that a mesh exists proves nothing
+useful. Put that coverage in the visual checklist instead.
 
-## Areas for Contribution
+## Style
 
-Here are some areas where contributions are especially welcome:
+- Prettier and ESLint are the arbiters; run `npm run format`.
+- Prefer deriving values over restating them. Block dimensions live in exactly
+  one place, `types/building-blocks.ts`, and everything else reads from there —
+  the two tables that used to exist had already drifted apart by 5 cm.
+- Classify block types by their template's `category`, never by matching a
+  substring of the type name.
+- Keep the placement rules inside `resolvePlacement`. The preview, the click
+  handler and the store must not each work out placement for themselves.
 
-### Features
+## Ideas
 
-- [ ] Add undo/redo functionality
-- [ ] Add keyboard shortcuts
-- [ ] Support for multiple files/modules
-- [ ] Import existing Rust code to visualize
-- [ ] Export to Cargo.toml format
-- [ ] Add templates for common patterns
-- [ ] Add zoom and pan controls
-- [ ] Add search functionality
-- [ ] Add comments/notes to canvas
-- [ ] Support for generics in types
+- Importing an exported design
+- Undo / redo
+- Roofs, stairs and doors
+- Base templates
+- A raid-cost calculator
 
-### Code Quality
+## Reporting a bug
 
-- [ ] Add unit tests
-- [ ] Add integration tests
-- [ ] Improve error handling
-- [ ] Add loading states
-- [ ] Improve accessibility
-- [ ] Add dark mode support
-- [ ] Optimize performance
-
-### Documentation
-
-- [ ] Add video tutorials
-- [ ] Add more examples
-- [ ] Improve API documentation
-- [ ] Add troubleshooting guide
-- [ ] Translate documentation
-
-## Code Review Process
-
-1. All PRs require at least one review
-2. Address review comments promptly
-3. Keep PRs focused on a single feature/fix
-4. Update documentation as needed
-5. Ensure CI passes before requesting review
-
-## Questions?
-
-Feel free to open an issue for:
-
-- Bug reports
-- Feature requests
-- Questions about implementation
-- General feedback
-
-## License
-
-By contributing, you agree that your contributions will be licensed under the MIT License.
+Say what you did, what you expected and what happened. For anything visual, a
+screenshot is worth far more than a description, and please include your browser
+and GPU — several past issues were specific to one WebGL implementation.

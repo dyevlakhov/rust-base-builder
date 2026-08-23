@@ -1,252 +1,119 @@
-# 🦀 Rust Base Builder
+# Rust Base Builder
 
-A 3D web application for planning and designing bases in the survival game **Rust**. Visualize your base layout with accurate building blocks, foundations, walls, and defenses before spending resources in-game!
+A 3D planner for bases in the survival game **Rust**. Lay out foundations, walls
+and floors on the game's 3 m building grid and see what the design costs before
+you spend anything in-game.
 
-![Next.js](https://img.shields.io/badge/Next.js-14.0-black)
+![Next.js](https://img.shields.io/badge/Next.js-14-black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue)
 ![Three.js](https://img.shields.io/badge/Three.js-0.160-orange)
-![React Three Fiber](https://img.shields.io/badge/R3F-8.15-purple)
+![React Three Fiber](https://img.shields.io/badge/R3F-8-purple)
+![License](https://img.shields.io/badge/license-MIT-green)
 
-## ✨ Features
+## What it does
 
-- **Authentic Rust Building System**: All building blocks match the game's actual system
-- **3x3 Foundation Grid**: Accurate grid matching Rust's building mechanics
-- **All Building Tiers**: Twig, Wood, Stone, Sheet Metal, and Armored
-- **Complete Block Library**: Foundations, walls, floors, roofs, stairs, and doors
-- **Interactive 3D Preview**: Rotate, pan, and zoom to view your base from any angle
-- **Building Piece Variants**: Full walls, half walls, low walls, doorways, windows, frames
-- **Resource Calculator**: See total resources needed for your base
-- **Multiple View Modes**: 3D, top-down, front, and side views
-- **Export/Import**: Save and share your base designs
+- **Eleven building pieces** — square and triangle foundations, four wall
+  variants plus doorway, window and wall frame, square and triangle floors, and
+  a floor frame.
+- **Grid snapping that mirrors the game.** Foundations and floors snap to cell
+  centres, walls to cell edges and auto-rotate to run along them, triangles
+  attach outwards from the edge of a square piece.
+- **Automatic stacking.** Pieces rest on whatever is underneath, so walls sit on
+  foundations and floors sit on walls without any height fiddling.
+- **Collision checking**, previewed live: the ghost turns red where a piece will
+  not fit.
+- **Five tiers** — Twig, Wood, Stone, Sheet Metal, Armored — each with its own
+  material, health and cost, switchable per piece after placing.
+- **Running resource cost** for the whole base, in the header.
+- **Four camera presets** — 3D, top, front and side.
+- **Your design is saved** in the browser and restored on reload.
+- **Export to JSON.**
 
-## 🎮 Rust Game Building Blocks
+## Getting started
 
-### Foundations
-
-- **Square Foundation** 🟫 - Standard 3x3 foundation
-- **Triangle Foundation** 🔺 - Triangular foundation for corners
-
-### Walls
-
-- **Full Wall** 🧱 - Standard full-height wall
-- **Half Wall** 📦 - Half-height wall (mid-tier)
-- **Low Wall** ▬ - Low wall for protection
-- **Doorway** 🚪 - Wall with door frame
-- **Window** 🪟 - Wall with window embrasure
-- **Wall Frame** ▢ - Open wall frame
-
-### Floors & Ceilings
-
-- **Square Floor** 🟦 - Standard square floor
-- **Triangle Floor** 🔷 - Triangular floor piece
-- **Floor Frame** ⊞ - Floor grate (see-through)
-
-### Roofs
-
-- **Square Roof** 🔳 - Flat square roof
-- **Triangle Roof** 🔼 - Sloped triangular roof
-
-### Stairs
-
-- **L-Shaped Stairs** 🪜 - L-shaped staircase
-- **U-Shaped Stairs** ⛏️ - U-shaped staircase
-
-### Doors
-
-- **Wooden Door** 🚪 - Basic wooden door (200 HP)
-- **Sheet Metal Door** 🔒 - Metal door (250 HP)
-- **Armored Door** 🛡️ - Armored door (800 HP)
-- **Garage Door** 🚧 - Large garage door
-
-## 🏗️ Building Tiers
-
-Each building piece can be upgraded through 5 tiers:
-
-1. **Twig** (10 HP) - 100 Wood
-2. **Wood** (250 HP) - 300 Wood
-3. **Stone** (500 HP) - 300 Stone
-4. **Sheet Metal** (1000 HP) - 200 Metal Frags + 25 HQM
-5. **Armored** (2000 HP) - 25 HQM + 5 Gears
-
-## 🚀 Getting Started
-
-### Installation
+Requires Node 20 or newer.
 
 ```bash
-# Clean old dependencies (if upgrading)
-rm -rf node_modules package-lock.json
-
-# Install dependencies
 npm install
-
-# Start development server
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000)
+Then open <http://localhost:3000>.
 
-## 🎯 How to Use
+```bash
+npm run build       # production build
+npm test            # unit tests
+npm run typecheck   # tsc --noEmit
+npm run lint        # eslint
+npm run format      # prettier --write
+```
 
-### Planning Your Base
+## Using it
 
-1. **Select Building Tier**: Choose from Twig, Wood, Stone, Metal, or Armored in the left panel
-2. **Add Building Pieces**: Click on blocks to add them to your base
-3. **Position Accurately**: Blocks snap to the 3x3 grid (1 foundation = 3x3m)
-4. **Build Vertically**: Stack floors to create multi-story bases
-5. **Add Defenses**: Place walls, doorways, and windows strategically
+1. Pick a **tier** at the top of the left panel. New pieces are placed at that tier.
+2. Pick a **piece** from the palette. The cursor turns into a crosshair and a
+   ghost follows it.
+3. **Click the ground** to place. Red means it will not fit there.
+4. **Escape** cancels placement.
+5. **Click a piece** to select it — the right panel shows its stats and lets you
+   change its tier, nudge its position, duplicate it or demolish it.
+6. **Delete** demolishes the selected piece.
 
-### Building Workflow
+| Input              | Action                      |
+| ------------------ | --------------------------- |
+| Left drag          | Orbit                       |
+| Right drag         | Pan                         |
+| Scroll             | Zoom                        |
+| Arrow keys         | Move the camera             |
+| Page Up / Down     | Raise / lower the camera    |
+| Escape             | Cancel placement            |
+| Delete / Backspace | Demolish the selected piece |
 
-1. Start with **foundations** - place square or triangle foundations
-2. Add **walls** around the perimeter
-3. Place **doorways** for entrances (remember to add actual doors!)
-4. Add **windows** for shooting angles
-5. Build **floors** for additional levels
-6. Add **stairs** to connect levels
-7. Top with **roofs** for protection
-8. Upgrade tiers for better defense
+## Grid
 
-### Controls
+One cell is 3 × 3 m, matching a square foundation. A full wall is 3 m tall. The
+exact numbers and the rules built on them are in
+[docs/BUILDING_ENGINE.md](./docs/BUILDING_ENGINE.md).
 
-- **Left Click + Drag**: Rotate camera around your base
-- **Right Click + Drag**: Pan the view
-- **Mouse Wheel**: Zoom in/out
-- **Click on Block**: Select to edit properties
-- **Select Tier**: Choose building tier before placing
+## Textures
 
-### Editing Blocks
+No texture assets ship with the repository — every material is generated
+procedurally at runtime, so a fresh clone renders with surface detail and no
+download step. Real PBR maps can be dropped into `public/textures/` and are
+picked up automatically; see [docs/MATERIALS.md](./docs/MATERIALS.md).
 
-Click any block to:
+## Tech stack
 
-- Change building tier (upgrade/downgrade)
-- Adjust position (3x3 grid units)
-- Rotate (90° increments recommended)
-- Duplicate for repeated patterns
-- Demolish to remove
+Next.js 14 (App Router) · React 18 · TypeScript · Three.js · React Three Fiber ·
+drei · Zustand · Tailwind CSS · Vitest
 
-## 📐 Grid System
+## Documentation
 
-The grid follows Rust's building system:
+- [Architecture](./docs/ARCHITECTURE.md) — layout, data flow, state, rendering
+- [Building engine](./docs/BUILDING_ENGINE.md) — dimensions, snapping, stacking, collision
+- [Materials](./docs/MATERIALS.md) — tiers, procedural textures, lighting
+- [Visual QA](./docs/VISUAL_QA.md) — the manual checklist for anything the tests cannot see
 
-- **1 Grid Square = 3x3 meters**
-- **1 Foundation = 3x3 meters**
-- **1 Wall Height = 3 meters**
-- **Snap to Grid** ensures accurate placement
+## Not implemented
 
-## 💡 Base Building Tips
+Listed here rather than in a features section, because the two are easy to
+confuse:
 
-### For Beginners
+- Importing an exported design
+- Undo / redo
+- Roofs, stairs, doors and deployables
+- Any damage or raid simulation — health is a tier property, nothing reduces it
 
-- Start with a 2x2 foundation layout (4 square foundations)
-- Use airlock design (2 doors in sequence) for security
-- Place TC (Tool Cupboard) in center, protected
-- Add triangle foundations to fill gaps
+## Contributing
 
-### For Advanced Builders
+See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
-- Plan loot room locations in core
-- Calculate raid cost vs build cost
-- Use honeycomb (external shell) for protection
-- Consider roof access and drop-down defenses
-- Plan for bunker design
+## Disclaimer
 
-### Resource Optimization
+A fan-made planning tool, not affiliated with Facepunch Studios. Dimensions,
+health values and costs are approximations for planning and are not extracted
+game data.
 
-- Start with Wood, upgrade to Stone
-- Prioritize TC area with Armored
-- Use Metal for important rooms
-- Honeycomb can stay lower tier (soaks raids)
+## License
 
-## 📊 Resource Calculator
-
-The app automatically calculates total resources needed:
-
-- 🪵 **Wood**: Total wood required
-- 🪨 **Stone**: Total stone required
-- ⚙️ **Metal Fragments**: Total metal frags
-- 💎 **HQM**: High Quality Metal required
-
-## 🎨 View Modes
-
-- **3D View**: Free rotation for overall design
-- **Top View**: Bird's eye view for floor plans
-- **Front View**: Check wall alignment
-- **Side View**: Verify vertical structure
-
-## 📁 Export & Import
-
-### Export
-
-Click "Export" to save your base design as JSON. Share with teammates or save for later!
-
-### Import (Coming Soon)
-
-Load previously saved designs to continue editing.
-
-## 🎮 Use Cases
-
-- **Pre-Wipe Planning**: Design your base before server wipe
-- **Team Coordination**: Share base designs with teammates
-- **Resource Planning**: Calculate exact resources needed
-- **Raid Defense**: Plan choke points and defenses
-- **Practice Building**: Learn building techniques offline
-
-## 🛠️ Tech Stack
-
-- **Next.js 14** - React framework
-- **TypeScript** - Type safety
-- **Three.js** - 3D graphics engine
-- **React Three Fiber** - React renderer for Three.js
-- **@react-three/drei** - 3D helpers
-- **Zustand** - State management
-- **Tailwind CSS** - Styling
-
-## 📝 Roadmap
-
-- [ ] Import saved designs
-- [ ] Pre-built base templates
-- [ ] Raid cost calculator
-- [ ] Deployables (furnaces, boxes, etc.)
-- [ ] Electricity components
-- [ ] Auto-turret placement
-- [ ] Line of sight visualization
-- [ ] Share designs online
-- [ ] Mobile support
-
-## 🤝 Contributing
-
-Contributions welcome! This tool is for the Rust community.
-
-Ideas for contributions:
-
-- More building block types
-- Trap designs
-- Base templates
-- Raid path visualization
-- Building cost optimizer
-
-## ⚠️ Disclaimer
-
-This is a fan-made tool and is not affiliated with Facepunch Studios or the game Rust. Building dimensions and mechanics are approximated for planning purposes.
-
-## 📄 License
-
-MIT License - Free to use for the Rust community!
-
-## 📚 Documentation
-
-Detailed docs live in [`docs/`](./docs):
-
-- [Installation](./docs/INSTALLATION.md) · [Quickstart](./docs/QUICKSTART.md) · [Examples](./docs/EXAMPLES.md)
-- [Architecture](./docs/ARCHITECTURE.md) · [Building engine](./docs/RUST_BUILDING_ENGINE.md) · [Material system](./docs/MATERIAL_SYSTEM.md)
-- [Textures](./docs/TEXTURES.md) · [Testing guide](./docs/TESTING_GUIDE.md)
-
-## 🙏 Acknowledgments
-
-- **Facepunch Studios** for creating Rust
-- **Rust Community** for building strategies and feedback
-- Built with love for Rust players 🦀
-
----
-
-**Plan smarter. Build better. Survive longer.** 🏗️🦀
+[MIT](./LICENSE)

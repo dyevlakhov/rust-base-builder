@@ -1,323 +1,101 @@
-# Application Architecture
+# Architecture
 
-This document explains the internal architecture of the Rust Architecture Builder application itself.
+A single-page Next.js app. There is no backend, no API and no database: the whole
+design lives in one Zustand store and is mirrored to `localStorage`.
 
-## Technology Stack
-
-```
-┌─────────────────────────────────────────┐
-│           Next.js 14 (App Router)       │
-│                                         │
-│  ┌────────────┐      ┌────────────┐   │
-│  │   React    │◄────►│ TypeScript │   │
-│  └────────────┘      └────────────┘   │
-└─────────────────────────────────────────┘
-         │                    │
-         ▼                    ▼
-┌──────────────┐    ┌──────────────────┐
-│  React Flow  │    │  Zustand Store   │
-│ (Canvas/UI)  │    │ (State Mgmt)     │
-└──────────────┘    └──────────────────┘
-         │                    │
-         ▼                    ▼
-┌─────────────────────────────────────────┐
-│          Tailwind CSS + Lucide          │
-│              (Styling + Icons)          │
-└─────────────────────────────────────────┘
-```
-
-## Project Structure
+## Layout
 
 ```
-rust_builder/
-│
-├── app/                    # Next.js App Router
-│   ├── layout.tsx         # Root layout with metadata
-│   ├── page.tsx           # Main page component
-│   └── globals.css        # Global styles and React Flow overrides
-│
-├── components/            # React components
-│   ├── Header.tsx         # Top navigation bar
-│   ├── BlockPalette.tsx   # Left sidebar with draggable blocks
-│   ├── BuilderCanvas.tsx  # Main React Flow canvas
-│   ├── RustBlockNode.tsx  # Custom node component
-│   ├── NodeDetailsPanel.tsx # Right sidebar for editing
-│   └── CodePreview.tsx    # Code preview panel
-│
-├── types/                 # TypeScript definitions
-│   └── rust-blocks.ts     # Block types and templates
-│
-├── store/                 # State management
-│   └── useBuilderStore.ts # Zustand store
-│
-├── utils/                 # Utility functions
-│   └── codeGenerator.ts   # Rust code generation
-│
-├── public/                # Static assets
-│   └── robots.txt
-│
-└── config files           # Configuration
-    ├── package.json
-    ├── tsconfig.json
-    ├── tailwind.config.ts
-    ├── next.config.js
-    ├── postcss.config.js
-    └── .eslintrc.json
+app/
+  layout.tsx              Metadata, fonts, global CSS
+  page.tsx                The only route: header, palette, canvas, details panel
+components/
+  Header.tsx              View modes, resource totals, export, clear
+  BlockPalette.tsx        Tier picker and the list of placeable pieces
+  BlockDetailsPanel.tsx   Inspector for the selected piece
+  BlockIcon.tsx           Icon lookup for block types and categories
+  Scene3D.tsx             <Canvas>, ground plane, grid, HUD overlays
+  scene/
+    CameraRig.tsx         View-mode framing and arrow-key panning
+    SceneEnvironment.tsx  Lights, sky, and the generated environment map
+    BuildingBlockMesh.tsx One placed piece
+    PlacementPreview.tsx  The ghost that follows the cursor
+  ui/
+    ConfirmDialog.tsx     Replacement for window.confirm
+    NumberField.tsx       Number input that does not fight the user
+hooks/
+  useAppShortcuts.ts      Escape and Delete
+  useHydrated.ts          First-render guard for persisted data
+store/
+  useBuilderStore.ts      Blocks, selection, tier, view mode; persistence
+  useConfirmStore.ts      Pending confirmation request
+types/
+  building-blocks.ts      Block types, canonical dimensions, tier properties
+utils/
+  snapUtils.ts            Grid snapping and triangle attachment
+  placementUtils.ts       Heights, stacking, collision, resolvePlacement
+  geometry.ts             Shared unit geometries
+  textureLoader.ts        PBR maps, with procedural fallbacks
+  resources.ts            Cost formatting and totals
+  dom.ts                  Small DOM helpers
+tests/                    Vitest suite for the pure logic
 ```
 
-## Component Hierarchy
+## Data flow
 
 ```
-App (page.tsx)
-├── Header
-│   └── Action Buttons (Export, Clear, Preview)
-│
-├── BlockPalette (Left Sidebar)
-│   └── Draggable Block Templates
-│
-├── BuilderCanvas (Main Area)
-│   ├── React Flow
-│   │   ├── Background
-│   │   ├── Controls
-│   │   ├── MiniMap
-│   │   └── Multiple RustBlockNodes
-│   │       └── Handles (connection points)
-│   │
-│   └── NodeDetailsPanel (Conditional)
-│       ├── Tabs (Basic, Fields, Methods, Advanced)
-│       └── Form inputs
-│
-└── CodePreview (Right Sidebar - Conditional)
-    ├── Generated Code Display
-    └── Copy Button
+BlockPalette ──sets placementMode──▶ store
+                                      │
+                            PlacementPreview reads it,
+                            raycasts the ground each frame,
+                            and calls resolvePlacement()
+                                      │
+                                      ▼
+                        { position, rotation, valid }
+                                      │
+    click on the ground plane ────────┴──▶ store.addBlock()
+                                                  │
+                                                  ▼
+                                   BuildingBlockMesh per block
 ```
 
-## Data Flow
+The important part is that the preview and the click handler call the **same**
+`resolvePlacement`. In the original code the snap, the height, the auto-rotation
+and the collision check were each written out three times — in the preview, in
+the click handler and in the store — and the copies had already drifted apart.
 
-### 1. Adding a Block
+## State
 
-```
-User drags block from palette
-        ↓
-onDrop event in BuilderCanvas
-        ↓
-addNode() in Zustand store
-        ↓
-nodes array updated
-        ↓
-React Flow re-renders with new node
-```
+`useBuilderStore` holds `blocks`, `selectedBlockId`, `currentTier`, `viewMode`,
+`snapToGrid` and `placementMode`. Components subscribe field by field so that
+placing a piece does not re-render the palette.
 
-### 2. Editing a Block
+Anything on the hot path reads the store imperatively with
+`useBuilderStore.getState()` rather than subscribing — the per-frame preview and
+the click handler both do this, so they never need to be rebuilt when a piece is
+added.
 
-```
-User clicks on node
-        ↓
-setSelectedNode() in store
-        ↓
-NodeDetailsPanel renders
-        ↓
-User edits fields
-        ↓
-updateNode() in store
-        ↓
-Node data updated
-        ↓
-RustBlockNode re-renders
-```
+`blocks`, `currentTier` and `snapToGrid` are persisted. Because the store
+restores itself as soon as its module is evaluated, anything that prints
+persisted data into the DOM guards its first render with `useHydrated`, or React
+reports a hydration mismatch.
 
-### 3. Code Generation
+## Rendering
 
-```
-User clicks "Preview Code"
-        ↓
-CodePreview component renders
-        ↓
-generateRustCode(nodes, edges)
-        ↓
-Code generated from templates
-        ↓
-Display in preview panel
-```
+- Every piece is a unit-sized geometry stretched by the mesh `scale`, so one
+  `BoxGeometry` and one triangular prism are shared by the whole scene.
+- The triangular prism is built with `ExtrudeGeometry` so that winding, normals
+  and UVs are generated rather than hand-written.
+- Image-based lighting comes from three's own `RoomEnvironment`, pre-filtered
+  once with `PMREMGenerator`. drei's `Environment preset` was deliberately
+  dropped: it fetches an HDRI from a third-party CDN at runtime.
+- The placement preview writes straight to the three.js objects inside
+  `useFrame` instead of going through React state.
 
-### 4. Connecting Blocks
+## Deliberate limitations
 
-```
-User drags from handle
-        ↓
-onConnect() in React Flow
-        ↓
-Edge added to store
-        ↓
-Visual connection drawn
-        ↓
-Used in code generation for relationships
-```
-
-## State Management (Zustand)
-
-```typescript
-BuilderStore {
-  // State
-  nodes: Node<RustBlock>[]     // All blocks on canvas
-  edges: Edge[]                // Connections between blocks
-  selectedNode: Node | null    // Currently selected block
-
-  // Actions
-  addNode()         // Add new block
-  updateNode()      // Update block data
-  deleteNode()      // Remove block
-  setSelectedNode() // Select/deselect block
-  onNodesChange()   // Handle React Flow node changes
-  onEdgesChange()   // Handle React Flow edge changes
-  onConnect()       // Handle new connections
-  clearAll()        // Reset everything
-}
-```
-
-## React Flow Integration
-
-React Flow provides:
-
-- **Canvas**: Infinite panning/zooming canvas
-- **Nodes**: Custom components (RustBlockNode)
-- **Edges**: Connections with handles
-- **Controls**: Zoom, pan, fit view
-- **MiniMap**: Overview of canvas
-- **Background**: Grid/dots background
-
-Custom node type:
-
-```typescript
-const nodeTypes = {
-  rustBlock: RustBlockNode, // Maps to our custom component
-}
-```
-
-## Code Generation Strategy
-
-### Template-Based Generation
-
-1. **Group by Type**: Separate nodes by Rust construct type
-2. **Generate Headers**: Add common imports and comments
-3. **Generate Each Type**: Use specific generators for each
-4. **Handle Relationships**: Use edges to determine impl connections
-5. **Format Output**: Pretty-print with proper indentation
-
-### Generators
-
-- `generateStruct()` - Struct definitions with fields
-- `generateEnum()` - Enum definitions with variants
-- `generateTrait()` - Trait definitions with methods
-- `generateImpl()` - Implementation blocks
-- `generateFunction()` - Free functions
-- `generateConst()` - Constant declarations
-- `generateTypeAlias()` - Type aliases
-- `generateMacro()` - Macro definitions
-- `generateModule()` - Module declarations
-
-## Styling Approach
-
-### Tailwind CSS Utility Classes
-
-- Rapid prototyping
-- Consistent design system
-- Responsive by default
-- Small bundle size
-
-### Custom CSS for React Flow
-
-Global overrides in `app/globals.css`:
-
-- Node styling
-- Handle styling
-- Edge styling
-- Selection states
-
-## Type Safety
-
-TypeScript ensures:
-
-- Valid block types
-- Correct data structures
-- Type-safe props
-- IntelliSense support
-
-Key type definitions:
-
-```typescript
-RustBlockType // Union of valid block types
-RustBlock // Main block data structure
-BlockTemplate // Block palette item
-;(Field, Method, etc) // Sub-structures
-```
-
-## Performance Considerations
-
-### Optimizations
-
-1. **React.memo**: RustBlockNode memoized to prevent unnecessary re-renders
-2. **Zustand**: Efficient state updates with selective subscriptions
-3. **React Flow**: Built-in optimization for large graphs
-4. **Tailwind**: Purged CSS for production builds
-
-### Scalability
-
-The application can handle:
-
-- Hundreds of blocks on canvas
-- Complex connection graphs
-- Real-time code generation
-- Large generated code outputs
-
-## Extension Points
-
-To extend the application:
-
-### Add New Block Type
-
-1. Add to `RustBlockType` in `types/rust-blocks.ts`
-2. Add template to `BLOCK_TEMPLATES`
-3. Create generator in `utils/codeGenerator.ts`
-4. Update UI if special rendering needed
-
-### Add New Feature
-
-1. Add state to `useBuilderStore.ts` if needed
-2. Create/modify components
-3. Add UI controls
-4. Update code generator if affects output
-
-### Customize Styling
-
-1. Modify `tailwind.config.ts` for theme
-2. Update component classes
-3. Add custom CSS in `globals.css`
-
-## Security Considerations
-
-- No backend/database (client-only)
-- No user data stored remotely
-- Code generated locally
-- No external API calls
-- Safe for sensitive projects
-
-## Browser Compatibility
-
-- Modern browsers (Chrome, Firefox, Safari, Edge)
-- ES2017+ JavaScript features
-- CSS Grid and Flexbox
-- Drag and Drop API
-
-## Future Architecture Ideas
-
-- [ ] WebAssembly for faster code generation
-- [ ] IndexedDB for local project storage
-- [ ] Web Workers for background processing
-- [ ] Service Worker for offline support
-- [ ] WebRTC for collaborative editing
-
----
-
-**Last Updated**: November 2024  
-**Version**: 0.1.0
+- No undo/redo.
+- Import is not implemented; export writes JSON.
+- Health is a property of the tier, not a simulation — nothing damages a piece.
+- A triangle claims the whole cell it reaches into, so two triangles never share
+  a cell even where they would geometrically fit.
