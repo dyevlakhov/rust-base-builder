@@ -31,7 +31,7 @@ you spend anything in-game.
 
 ## Getting started
 
-Requires Node 20.9 or newer.
+Requires Node 24.
 
 ```bash
 npm install
@@ -98,7 +98,8 @@ Two optional settings:
 - `NEXT_PUBLIC_SITE_URL` — set this if the app is served from a custom domain,
   so canonical and Open Graph URLs point at it. Without it the deployment falls
   back to Vercel's own production URL.
-- Node 20.9 or newer, the minimum pinned in `engines`. `.nvmrc` and CI use 22.
+- Node 24, pinned in `engines` and `.nvmrc`. Vercel picks this up from
+  `engines` on its own.
 
 The social preview card at `/opengraph-image` is generated at build time from
 code in `app/opengraph-image.tsx`; there is no image asset to keep in sync.

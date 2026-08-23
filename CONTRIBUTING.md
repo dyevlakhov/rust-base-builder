@@ -4,7 +4,8 @@ Contributions are welcome. This is a small project, so the process is short.
 
 ## Getting set up
 
-Requires Node 20.9 or newer.
+Requires Node 24. With fnm or nvm installed, `fnm use` / `nvm use` picks it up
+from `.nvmrc`.
 
 ```bash
 git clone https://github.com/<your-fork>/rust-base-builder.git
