@@ -1,6 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
 
 :root {
   --foreground-rgb: 255, 255, 255;
@@ -20,28 +18,26 @@ body {
   );
 }
 
-@layer utilities {
-  .glass {
-    background: rgba(17, 24, 39, 0.7);
-    backdrop-filter: blur(12px) saturate(180%);
-    -webkit-backdrop-filter: blur(12px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
+@utility glass {
+  background: rgba(17, 24, 39, 0.7);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
 
-  .glass-light {
-    background: rgba(31, 41, 55, 0.6);
-    backdrop-filter: blur(16px) saturate(180%);
-    -webkit-backdrop-filter: blur(16px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-  }
+@utility glass-light {
+  background: rgba(31, 41, 55, 0.6);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
 
-  .float {
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-  }
+@utility float {
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
 
-  .float-sm {
-    box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.25);
-  }
+@utility float-sm {
+  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.25);
 }
 
 canvas {

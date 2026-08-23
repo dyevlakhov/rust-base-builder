@@ -85,7 +85,7 @@ picked up automatically; see [docs/MATERIALS.md](./docs/MATERIALS.md).
 ## Tech stack
 
 Next.js 16 (App Router) · React 19 · TypeScript · Three.js · React Three Fiber 9 ·
-drei · Zustand · Tailwind CSS · Vitest
+drei · Zustand · Tailwind CSS 4 · Vitest
 
 ## Documentation
 
