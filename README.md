@@ -87,6 +87,25 @@ picked up automatically; see [docs/MATERIALS.md](./docs/MATERIALS.md).
 Next.js 16 (App Router) · React 19 · TypeScript · Three.js · React Three Fiber 9 ·
 drei · Zustand · Tailwind CSS 4 · Vitest
 
+## Deploying
+
+The app is fully static: no backend, no database, no environment variables
+required. On Vercel, import the repository and accept the detected Next.js
+preset — install, build and output settings all work as detected.
+
+Two optional settings:
+
+- `NEXT_PUBLIC_SITE_URL` — set this if the app is served from a custom domain,
+  so canonical and Open Graph URLs point at it. Without it the deployment falls
+  back to Vercel's own production URL.
+- Node 20 or newer, which is pinned in `engines` and `.nvmrc`.
+
+The social preview card at `/opengraph-image` is generated at build time from
+code in `app/opengraph-image.tsx`; there is no image asset to keep in sync.
+
+Nothing is fetched from a third-party host at runtime, so the app renders the
+same on a locked-down network as it does anywhere else.
+
 ## Documentation
 
 - [Architecture](./docs/ARCHITECTURE.md) — layout, data flow, state, rendering

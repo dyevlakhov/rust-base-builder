@@ -4,7 +4,18 @@ import './globals.css'
 
 const inter = Inter({ subsets: ['latin'], display: 'swap' })
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
+/**
+ * Absolute base for canonical and Open Graph URLs.
+ *
+ * Set NEXT_PUBLIC_SITE_URL for a custom domain. Otherwise Vercel's own
+ * production URL is used, so a preview or a fresh deploy still emits correct
+ * absolute URLs without any configuration.
+ */
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  (process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL}`
+    : 'http://localhost:3000')
 
 const title = 'Rust Base Builder'
 const description =

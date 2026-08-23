@@ -36,5 +36,10 @@
     "tailwindcss": "^4.3.3",
     "typescript": "^5.3.3",
     "vitest": "^4.1.11"
-  }
+  },
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "description": "A 3D planner for bases in the survival game Rust.",
+  "license": "MIT"
 }
