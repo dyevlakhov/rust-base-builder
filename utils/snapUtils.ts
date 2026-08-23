@@ -167,11 +167,14 @@ function snapToNearestEdge(
   position: [number, number, number],
   gridSize: number
 ): [number, number, number] {
-  const xInCell = ((position[0] % gridSize) + gridSize) % gridSize
-  const zInCell = ((position[2] % gridSize) + gridSize) % gridSize
+  // Derive the cell origin by flooring rather than by subtracting a modulo:
+  // subtraction leaves values like -1.7e-16 where an exact 0 is expected, and a
+  // grid line that is a hair off compares as a different occupancy slot.
+  const cellX = Math.floor(position[0] / gridSize) * gridSize
+  const cellZ = Math.floor(position[2] / gridSize) * gridSize
 
-  const cellX = position[0] - xInCell
-  const cellZ = position[2] - zInCell
+  const xInCell = position[0] - cellX
+  const zInCell = position[2] - cellZ
 
   // Each edge midpoint sits in the middle of the cell on the other axis.
   const [centreX, centreZ] = snapToCellCentre(position[0], position[2], gridSize)

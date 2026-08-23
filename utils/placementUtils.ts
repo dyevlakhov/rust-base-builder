@@ -80,8 +80,10 @@ export interface Occupancy {
 }
 
 function slotKey(prefix: string, x: number, z: number): string {
-  // Quantise so that floating point noise from the snap maths cannot split a slot.
-  return `${prefix}:${Math.round(x * 100) / 100},${Math.round(z * 100) / 100}`
+  // Quantise so floating point noise from the snap maths cannot split a slot.
+  // The `+ 0` normalises -0, which would otherwise stringify to a different key.
+  const quantise = (value: number) => Math.round(value * 100) / 100 + 0
+  return `${prefix}:${quantise(x)},${quantise(z)}`
 }
 
 /** Unit vector the triangle's apex points along, derived from its Y rotation. */
