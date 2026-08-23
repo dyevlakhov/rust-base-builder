@@ -13,6 +13,12 @@ import { useEffect, useState } from 'react'
  */
 export function useHydrated(): boolean {
   const [hydrated, setHydrated] = useState(false)
+
+  // Setting state from an effect is the whole point here: the effect is what
+  // distinguishes "rendered on the server" from "running in the browser", and
+  // there is no render-phase equivalent. One extra render, once, on mount.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setHydrated(true), [])
+
   return hydrated
 }

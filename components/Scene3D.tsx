@@ -106,7 +106,9 @@ export function Scene3D() {
     >
       <Canvas
         camera={{ position: VIEW_POSITIONS['3d'], fov: 50, near: 0.5, far: 2000 }}
-        shadows
+        // three 0.185 deprecates PCFSoftShadowMap, which is what a bare
+        // `shadows` selects; "percentage" is PCFShadowMap.
+        shadows="percentage"
         dpr={[1, 2]}
         style={{ display: 'block', width: '100%', height: '100%' }}
       >

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 interface NumberFieldProps {
   label: string
@@ -24,15 +24,23 @@ function format(value: number): string {
 export function NumberField({ label, value, step = 0.5, onCommit }: NumberFieldProps) {
   const [draft, setDraft] = useState(() => format(value))
   const [editing, setEditing] = useState(false)
+  const [lastValue, setLastValue] = useState(value)
 
-  useEffect(() => {
-    if (!editing) setDraft(format(value))
-  }, [value, editing])
+  // Adjusted during render rather than in an effect: while the field is idle it
+  // mirrors the store, and an effect would render once with a stale draft first.
+  // https://react.dev/learn/you-might-not-need-an-effect
+  if (!editing && value !== lastValue) {
+    setLastValue(value)
+    setDraft(format(value))
+  }
 
   const commit = () => {
     setEditing(false)
     const parsed = Number.parseFloat(draft)
+
     if (Number.isFinite(parsed)) {
+      setDraft(format(parsed))
+      setLastValue(parsed)
       onCommit(parsed)
     } else {
       setDraft(format(value))

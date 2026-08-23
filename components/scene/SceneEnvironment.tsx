@@ -53,6 +53,10 @@ export function EnvironmentMap() {
     const room = new RoomEnvironment()
     const target = pmrem.fromScene(room, 0.04)
 
+    // Mutating the three.js scene is how React Three Fiber is driven; the
+    // immutability rule is aimed at React state, and there is no declarative
+    // equivalent for attaching a pre-filtered environment map.
+    // eslint-disable-next-line react-hooks/immutability
     scene.environment = target.texture
 
     return () => {

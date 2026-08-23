@@ -4,10 +4,10 @@ A 3D planner for bases in the survival game **Rust**. Lay out foundations, walls
 and floors on the game's 3 m building grid and see what the design costs before
 you spend anything in-game.
 
-![Next.js](https://img.shields.io/badge/Next.js-14-black)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue)
-![Three.js](https://img.shields.io/badge/Three.js-0.160-orange)
-![React Three Fiber](https://img.shields.io/badge/R3F-8-purple)
+![Next.js](https://img.shields.io/badge/Next.js-16-black)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue)
+![Three.js](https://img.shields.io/badge/Three.js-0.185-orange)
+![React Three Fiber](https://img.shields.io/badge/R3F-9-purple)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 ## What it does
@@ -84,7 +84,7 @@ picked up automatically; see [docs/MATERIALS.md](./docs/MATERIALS.md).
 
 ## Tech stack
 
-Next.js 14 (App Router) · React 18 · TypeScript · Three.js · React Three Fiber ·
+Next.js 16 (App Router) · React 19 · TypeScript · Three.js · React Three Fiber 9 ·
 drei · Zustand · Tailwind CSS · Vitest
 
 ## Documentation
