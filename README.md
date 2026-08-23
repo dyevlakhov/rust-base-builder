@@ -218,6 +218,14 @@ This is a fan-made tool and is not affiliated with Facepunch Studios or the game
 
 MIT License - Free to use for the Rust community!
 
+## 📚 Documentation
+
+Detailed docs live in [`docs/`](./docs):
+
+- [Installation](./docs/INSTALLATION.md) · [Quickstart](./docs/QUICKSTART.md) · [Examples](./docs/EXAMPLES.md)
+- [Architecture](./docs/ARCHITECTURE.md) · [Building engine](./docs/RUST_BUILDING_ENGINE.md) · [Material system](./docs/MATERIAL_SYSTEM.md)
+- [Textures](./docs/TEXTURES.md) · [Testing guide](./docs/TESTING_GUIDE.md)
+
 ## 🙏 Acknowledgments
 
 - **Facepunch Studios** for creating Rust

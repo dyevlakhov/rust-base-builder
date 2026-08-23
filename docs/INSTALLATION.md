@@ -200,7 +200,7 @@ After successful installation:
 
 1. Read [QUICKSTART.md](./QUICKSTART.md) for a quick tutorial
 2. Check [EXAMPLES.md](./EXAMPLES.md) for building ideas
-3. Review [README.md](./README.md) for full documentation
+3. Review [README.md](../README.md) for full documentation
 
 ## Support
 
