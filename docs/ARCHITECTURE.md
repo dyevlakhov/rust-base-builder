@@ -162,7 +162,7 @@ BuilderStore {
   nodes: Node<RustBlock>[]     // All blocks on canvas
   edges: Edge[]                // Connections between blocks
   selectedNode: Node | null    // Currently selected block
-  
+
   // Actions
   addNode()         // Add new block
   updateNode()      // Update block data
@@ -178,6 +178,7 @@ BuilderStore {
 ## React Flow Integration
 
 React Flow provides:
+
 - **Canvas**: Infinite panning/zooming canvas
 - **Nodes**: Custom components (RustBlockNode)
 - **Edges**: Connections with handles
@@ -186,9 +187,10 @@ React Flow provides:
 - **Background**: Grid/dots background
 
 Custom node type:
+
 ```typescript
 const nodeTypes = {
-  rustBlock: RustBlockNode  // Maps to our custom component
+  rustBlock: RustBlockNode, // Maps to our custom component
 }
 ```
 
@@ -226,6 +228,7 @@ const nodeTypes = {
 ### Custom CSS for React Flow
 
 Global overrides in `app/globals.css`:
+
 - Node styling
 - Handle styling
 - Edge styling
@@ -234,17 +237,19 @@ Global overrides in `app/globals.css`:
 ## Type Safety
 
 TypeScript ensures:
+
 - Valid block types
 - Correct data structures
 - Type-safe props
 - IntelliSense support
 
 Key type definitions:
+
 ```typescript
-RustBlockType      // Union of valid block types
-RustBlock          // Main block data structure
-BlockTemplate      // Block palette item
-Field, Method, etc // Sub-structures
+RustBlockType // Union of valid block types
+RustBlock // Main block data structure
+BlockTemplate // Block palette item
+;(Field, Method, etc) // Sub-structures
 ```
 
 ## Performance Considerations
@@ -259,6 +264,7 @@ Field, Method, etc // Sub-structures
 ### Scalability
 
 The application can handle:
+
 - Hundreds of blocks on canvas
 - Complex connection graphs
 - Real-time code generation
@@ -315,4 +321,3 @@ To extend the application:
 
 **Last Updated**: November 2024  
 **Version**: 0.1.0
-

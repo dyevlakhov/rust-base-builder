@@ -38,14 +38,14 @@ Triangle snaps to one of these 4 corner positions.
 
 Triangles rotate based on which corner they attach to:
 
-| Corner | Position | Rotation | Points Toward |
-|--------|----------|----------|---------------|
-| Top-Left | (-1.5, -1.5) | 90° | Southeast ↘ |
-| Top-Right | (+1.5, -1.5) | 180° | Southwest ↙ |
-| Bottom-Left | (-1.5, +1.5) | 0° | Northeast ↗ |
-| Bottom-Right | (+1.5, +1.5) | 270° (-90°) | Northwest ↖ |
+| Corner       | Position     | Rotation    | Points Toward |
+| ------------ | ------------ | ----------- | ------------- |
+| Top-Left     | (-1.5, -1.5) | 90°         | Southeast ↘   |
+| Top-Right    | (+1.5, -1.5) | 180°        | Southwest ↙   |
+| Bottom-Left  | (-1.5, +1.5) | 0°          | Northeast ↗   |
+| Bottom-Right | (+1.5, +1.5) | 270° (-90°) | Northwest ↖   |
 
-**Key Principle**: Triangle always points *inward* toward the center of the square it's attached to.
+**Key Principle**: Triangle always points _inward_ toward the center of the square it's attached to.
 
 ---
 
@@ -56,15 +56,15 @@ Triangles rotate based on which corner they attach to:
 ```typescript
 if (blockType && blockType.includes('triangle')) {
   // 1. Find nearby squares at same height
-  const nearbySquares = blocks.filter(block => 
+  const nearbySquares = blocks.filter(block =>
     targetTypes.includes(block.type) &&
     Math.abs(block.position[1] - position[1]) < 0.5
   )
-  
+
   if (nearbySquares.length > 0) {
     // 2. Find nearest square
     let nearestSquare = /* calculate closest */
-    
+
     // 3. Calculate 4 corners
     const corners = [
       [squareX - 1.5, squareZ - 1.5], // Top-left
@@ -72,13 +72,13 @@ if (blockType && blockType.includes('triangle')) {
       [squareX - 1.5, squareZ + 1.5], // Bottom-left
       [squareX + 1.5, squareZ + 1.5], // Bottom-right
     ]
-    
+
     // 4. Snap to closest corner
     let closestCorner = /* find nearest corner */
-    
+
     return [closestCorner[0], position[1], closestCorner[1]]
   }
-  
+
   // No nearby square, snap to grid center like normal
   return [/* grid center */]
 }
@@ -90,11 +90,11 @@ if (blockType && blockType.includes('triangle')) {
 if (type.includes('triangle')) {
   // Find which square this triangle is attached to
   const nearestSquare = /* find nearest */
-  
+
   // Determine which corner (dx, dz from square center)
   const dx = snappedPosition[0] - nearestSquare.position[0]
   const dz = snappedPosition[2] - nearestSquare.position[2]
-  
+
   // Rotate based on corner quadrant
   if (dx < 0 && dz < 0) rotation = [0, Math.PI / 2, 0]      // Top-left: 90°
   else if (dx > 0 && dz < 0) rotation = [0, Math.PI, 0]     // Top-right: 180°
@@ -169,16 +169,19 @@ Each triangle floor:
 ## 📊 Triangle vs Square Dimensions
 
 ### Square Pieces
+
 - **Size**: 3.0 × 3.0 meters
 - **Grid**: Full cell
 - **Position**: Grid center (1.5, 4.5, 7.5, etc.)
 
 ### Triangle Pieces
+
 - **Size**: 1.5 × 1.5 meters (half of square)
 - **Grid**: Quarter cell (corner)
 - **Position**: Grid corners (0, 3, 6, etc.)
 
 ### Coverage Math
+
 ```
 1 Square = 9 m² (3×3)
 1 Triangle = 2.25 m² (1.5×1.5, but triangular)
@@ -230,6 +233,7 @@ if (blockType.includes('triangle')) {
 ## 🔍 Edge Cases Handled
 
 ### Case 1: No Nearby Square
+
 ```
 Behavior: Triangle snaps to grid center like normal
 Result: Can place standalone triangle foundations
@@ -237,6 +241,7 @@ Use: Start new base section
 ```
 
 ### Case 2: Multiple Squares Nearby
+
 ```
 Behavior: Snaps to CLOSEST square
 Algorithm: Calculate Euclidean distance to each
@@ -244,6 +249,7 @@ Result: Always predictable, nearest wins
 ```
 
 ### Case 3: Different Height Levels
+
 ```
 Behavior: Only considers squares at same Y level (±0.5)
 Filter: Math.abs(block.position[1] - position[1]) < 0.5
@@ -251,6 +257,7 @@ Result: Ground triangles don't snap to upper floor squares
 ```
 
 ### Case 4: Triangle Already Exists
+
 ```
 Behavior: Can place second triangle in same corner
 Result: Will overlap (user can delete extra)
@@ -258,6 +265,7 @@ Future: Add collision detection
 ```
 
 ### Case 5: Opposite Triangle Rotations
+
 ```
 Situation: Two squares side-by-side
 Corner between them: (3, Y, 1.5)
@@ -273,6 +281,7 @@ Solution: Snaps to closest square
 ## 🧪 Testing Scenarios
 
 ### Test 1: Basic Corner Snap
+
 ```
 ✅ Place square foundation
 ✅ Place triangle near corner
@@ -281,6 +290,7 @@ Solution: Snaps to closest square
 ```
 
 ### Test 2: All 4 Corners
+
 ```
 ✅ Can fill all 4 corners of square
 ✅ Each rotates differently
@@ -289,6 +299,7 @@ Solution: Snaps to closest square
 ```
 
 ### Test 3: Preview Feedback
+
 ```
 ✅ Preview shows correct position before click
 ✅ Preview rotates dynamically
@@ -297,6 +308,7 @@ Solution: Snaps to closest square
 ```
 
 ### Test 4: Multi-Level
+
 ```
 ✅ Ground level: Square + triangles
 ✅ Floor level: Square + triangles
@@ -305,6 +317,7 @@ Solution: Snaps to closest square
 ```
 
 ### Test 5: Edge Cases
+
 ```
 ✅ Works with no nearby squares
 ✅ Works with multiple nearby squares
@@ -320,28 +333,32 @@ Solution: Snaps to closest square
 ### Optimization Strategies
 
 **Spatial Filtering**:
+
 - Only checks blocks at same height (Y ± 0.5)
 - Reduces search space by ~90%
 
 **Early Exit**:
+
 - If no nearby squares found, return immediately
 - Avoids unnecessary calculations
 
 **Simple Distance**:
+
 - Uses squared distance (avoids sqrt when comparing)
 - Only calculates actual distance for final result
 
 ### Performance Impact
 
-| Operation | Time | Impact |
-|-----------|------|--------|
-| Find squares | O(n) | Linear scan |
-| Find nearest | O(k) | k = nearby squares (usually 1-4) |
-| Calculate corners | O(1) | Fixed 4 corners |
-| Find closest corner | O(1) | Fixed 4 comparisons |
-| **Total** | **O(n)** | Acceptable, n = total blocks |
+| Operation           | Time     | Impact                           |
+| ------------------- | -------- | -------------------------------- |
+| Find squares        | O(n)     | Linear scan                      |
+| Find nearest        | O(k)     | k = nearby squares (usually 1-4) |
+| Calculate corners   | O(1)     | Fixed 4 corners                  |
+| Find closest corner | O(1)     | Fixed 4 comparisons              |
+| **Total**           | **O(n)** | Acceptable, n = total blocks     |
 
 **Benchmark** (1000 blocks):
+
 - Triangle snap: ~2ms
 - Square snap: ~0.5ms
 - Negligible FPS impact
@@ -379,11 +396,11 @@ The core snapping behavior matches Rust perfectly. Missing features are validati
 ### Planned Features
 
 **1. Collision Detection**
+
 ```typescript
 // Check if triangle already exists at corner
-const existingTriangles = blocks.filter(block =>
-  block.type.includes('triangle') &&
-  distance(block.position, targetPosition) < 0.1
+const existingTriangles = blocks.filter(
+  (block) => block.type.includes('triangle') && distance(block.position, targetPosition) < 0.1
 )
 if (existingTriangles.length > 0) {
   // Show red preview, prevent placement
@@ -391,6 +408,7 @@ if (existingTriangles.length > 0) {
 ```
 
 **2. Smart Corner Suggestions**
+
 ```typescript
 // Highlight empty corners when placing triangle
 const emptyCorners = findEmptyCorners(nearestSquare)
@@ -398,6 +416,7 @@ const emptyCorners = findEmptyCorners(nearestSquare)
 ```
 
 **3. Auto-Fill Pattern**
+
 ```typescript
 // Hold Shift + click square → auto-fill all 4 corners
 function fillAllCorners(square) {
@@ -410,6 +429,7 @@ function fillAllCorners(square) {
 ```
 
 **4. Triangle-to-Triangle Snapping**
+
 ```typescript
 // Triangles snap to other triangles for expansion
 // Forms larger diagonal patterns
@@ -441,16 +461,18 @@ When adding new triangle blocks:
 ### Debugging Tips
 
 **Console Logging**:
+
 ```typescript
 console.log('Triangle snap:', {
   nearbySquares: nearbySquares.length,
   nearest: nearestSquare.type,
   corner: closestCorner,
-  rotation: rotation
+  rotation: rotation,
 })
 ```
 
 **Visual Debugging**:
+
 - Add helper gizmos at corner positions
 - Draw lines from triangle to parent square
 - Show rotation angle as text label
@@ -487,4 +509,3 @@ Triangle pieces now **intelligently snap to square corners** with **automatic ro
 **Performance**: Excellent
 
 🦀 **Triangle snapping implemented - Rust-accurate corner detection!** 🦀
-

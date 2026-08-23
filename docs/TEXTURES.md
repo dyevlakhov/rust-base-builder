@@ -12,17 +12,20 @@ This guide explains how to add authentic Rust game textures to your building blo
 ## Recommended Free Texture Sources
 
 ### 1. Poly Haven (CC0 - Free for Commercial Use)
+
 - **Website**: https://polyhaven.com/
 - **Search for**: "concrete", "stone", "wood planks", "metal", "corrugated metal"
 - **Download**: Diffuse, Normal, Roughness maps
 - **Format**: JPG or PNG
 
 ### 2. FreePBR (Free PBR Materials)
+
 - **Website**: https://freepbr.com/
 - **Categories**: Concrete, Stone, Metal, Wood
 - **Download**: Full PBR material sets
 
 ### 3. Texture Haven (CC0)
+
 - **Website**: https://texturehaven.com/
 - **High quality**: 1K, 2K, 4K resolutions
 - **Free**: No attribution required
@@ -54,6 +57,7 @@ For each tier and block type combination, you need:
 ## Example: Stone Foundation Textures
 
 Download these files and name them:
+
 - `stone_foundation_diffuse.jpg` - Main stone texture
 - `stone_foundation_normal.jpg` - Stone surface bumps
 - `stone_foundation_roughness.jpg` - Rough stone surface
@@ -64,6 +68,7 @@ Download these files and name them:
 ### All Tier Combinations Needed:
 
 **Foundations:**
+
 - `twig_foundation_*.jpg`
 - `wood_foundation_*.jpg`
 - `stone_foundation_*.jpg`
@@ -71,6 +76,7 @@ Download these files and name them:
 - `armored_foundation_*.jpg`
 
 **Walls:**
+
 - `twig_wall_*.jpg`
 - `wood_wall_*.jpg`
 - `stone_wall_*.jpg`
@@ -78,6 +84,7 @@ Download these files and name them:
 - `armored_wall_*.jpg`
 
 **Floors:**
+
 - `twig_floor_*.jpg`
 - `wood_floor_*.jpg`
 - `stone_floor_*.jpg`
@@ -110,6 +117,7 @@ You can use this approach to download textures:
 ## Fallback Behavior
 
 If textures are missing, the application will:
+
 1. Try to load from `public/textures/`
 2. If not found, generate procedural textures
 3. Procedural textures use tier colors with noise patterns
@@ -126,4 +134,3 @@ If textures are missing, the application will:
 - **Extracting from Rust**: Only for personal use, check EULA
 - **Free textures**: CC0/public domain textures are safe to use
 - **Commercial use**: Verify license for any textures you download
-

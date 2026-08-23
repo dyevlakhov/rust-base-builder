@@ -5,6 +5,7 @@ Inspiration and tutorials for creating different structures with the 3D Building
 ## Example 1: Simple Single-Story House
 
 ### Structure
+
 - 1 Foundation (4×0.5×4)
 - 4 Walls forming a square
 - 1 Door on front wall
@@ -12,6 +13,7 @@ Inspiration and tutorials for creating different structures with the 3D Building
 - 1 Flat roof
 
 ### Step-by-Step
+
 1. Add Foundation at (0, 0, 0)
 2. Add Walls:
    - Front: (0, 1.5, 2) - add door here
@@ -23,6 +25,7 @@ Inspiration and tutorials for creating different structures with the 3D Building
 5. Add Roof: (0, 3.5, 0)
 
 ### Materials
+
 - Foundation: Concrete
 - Walls: Brick
 - Door: Wood
@@ -32,6 +35,7 @@ Inspiration and tutorials for creating different structures with the 3D Building
 ## Example 2: Two-Story Building
 
 ### Structure
+
 - Foundation
 - Ground floor walls
 - Ground floor: door, windows
@@ -41,6 +45,7 @@ Inspiration and tutorials for creating different structures with the 3D Building
 - Pitched roof
 
 ### Building Process
+
 1. **Foundation**: (0, 0, 0)
 2. **Ground Floor Walls** at Y=1.5
 3. **Floor Platform**: (0, 3, 0) for second level
@@ -49,6 +54,7 @@ Inspiration and tutorials for creating different structures with the 3D Building
 6. **Roof**: (0, 6.5, 0)
 
 ### Tips
+
 - Use columns at corners for support look
 - Space windows evenly on walls
 - Make second floor slightly smaller for balconies
@@ -56,9 +62,11 @@ Inspiration and tutorials for creating different structures with the 3D Building
 ## Example 3: Modern Glass Building
 
 ### Concept
+
 Contemporary structure with lots of glass
 
 ### Materials
+
 - Foundation: Concrete (dark gray)
 - Columns: Metal (silver)
 - Walls: Glass (light blue, transparent)
@@ -66,6 +74,7 @@ Contemporary structure with lots of glass
 - Accents: Metal
 
 ### Features
+
 - Floor-to-ceiling glass walls
 - Metal support columns at corners
 - Multiple floors
@@ -75,9 +84,11 @@ Contemporary structure with lots of glass
 ## Example 4: Tower Structure
 
 ### Design
+
 Tall vertical structure
 
 ### Construction
+
 1. Foundation: (0, 0, 0), size 3×0.5×3
 2. Add 4 columns at corners:
    - (-1, 2, -1)
@@ -89,6 +100,7 @@ Tall vertical structure
 5. Top with chimney or decorative element
 
 ### Height
+
 - Stack 5-6 floors
 - Total height: 15-18 units
 - Use columns for vertical continuity
@@ -96,9 +108,11 @@ Tall vertical structure
 ## Example 5: Bridge
 
 ### Concept
+
 Horizontal structure spanning a gap
 
 ### Elements
+
 1. Two foundation blocks as supports
    - Left: (-5, 0, 0)
    - Right: (5, 0, 0)
@@ -107,6 +121,7 @@ Horizontal structure spanning a gap
 4. Railing walls on sides
 
 ### Materials
+
 - Foundations: Concrete
 - Columns: Stone
 - Deck: Wood or concrete
@@ -115,6 +130,7 @@ Horizontal structure spanning a gap
 ## Example 6: Warehouse/Barn
 
 ### Large Open Structure
+
 - Wide foundation
 - Tall corner columns
 - Minimal walls (open sides)
@@ -122,6 +138,7 @@ Horizontal structure spanning a gap
 - Big door openings
 
 ### Specifications
+
 1. Foundation: 10×0.5×8
 2. 4 tall columns at corners
 3. Only 2 walls (front and back)
@@ -131,18 +148,21 @@ Horizontal structure spanning a gap
 ## Example 7: Garden Pavilion
 
 ### Small Decorative Structure
+
 - Small foundation
 - 4 columns (no walls)
 - Open sides
 - Decorative roof
 
 ### Build
+
 1. Foundation: 3×0.5×3
 2. Columns at 4 corners: height 2.5
 3. Flat roof: 3.5×0.3×3.5
 4. Optional: railings (short walls)
 
 ### Style
+
 - Wood columns
 - Colored roof
 - Stone foundation
@@ -151,6 +171,7 @@ Horizontal structure spanning a gap
 ## Example 8: Castle Tower
 
 ### Medieval Style
+
 1. Stone foundation (large)
 2. Thick stone walls
 3. Small windows (narrow)
@@ -159,6 +180,7 @@ Horizontal structure spanning a gap
 6. Stairs inside
 
 ### Materials
+
 - Everything in stone or brick
 - Dark gray colors
 - Thick walls (scale walls larger)
@@ -167,6 +189,7 @@ Horizontal structure spanning a gap
 ## Example 9: Modern Villa
 
 ### Luxury Design
+
 - Multiple connected structures
 - Different heights
 - Large windows
@@ -174,6 +197,7 @@ Horizontal structure spanning a gap
 - Mixed materials
 
 ### Features
+
 - Main building: 2-3 floors
 - Side wing: 1 floor
 - Balconies on upper floors
@@ -183,6 +207,7 @@ Horizontal structure spanning a gap
 ## Example 10: Industrial Shed
 
 ### Utilitarian Design
+
 - Metal construction
 - Wide open interior
 - High ceiling
@@ -190,6 +215,7 @@ Horizontal structure spanning a gap
 - Simple flat roof
 
 ### Build
+
 1. Concrete foundation
 2. Metal columns at perimeter
 3. Metal walls (or no walls)
@@ -199,17 +225,20 @@ Horizontal structure spanning a gap
 ## Pro Tips
 
 ### Symmetry
+
 - Build one side, then mirror
 - Use same positions with opposite signs
 - Keep Y axis consistent
 
 ### Realism
+
 - Foundation slightly larger than walls
 - Roof overhangs (slightly larger than building)
 - Windows don't touch ground
 - Doors at ground level (Y around 1.1)
 
 ### Proportions
+
 - Standard door: ~2.2 units high
 - Standard ceiling: ~3 units high
 - Window sills: ~1 unit above floor
@@ -218,24 +247,28 @@ Horizontal structure spanning a gap
 ### Color Schemes
 
 **Traditional**
+
 - Brick red walls
 - Dark wood doors
 - Brown roof
 - Stone gray foundation
 
 **Modern**
+
 - White/light gray walls
 - Dark gray accents
 - Glass windows
 - Metal frames
 
 **Industrial**
+
 - Dark gray/black
 - Metal everywhere
 - Concrete foundation
 - Minimal color
 
 **Natural**
+
 - Wood tones (browns)
 - Stone gray
 - Earth colors
@@ -257,6 +290,7 @@ Try these challenges:
 ## Measurement Reference
 
 ### Standard Sizes
+
 - Human height: ~1.7 units
 - Door height: 2.2 units
 - Floor height: 3 units
@@ -264,6 +298,7 @@ Try these challenges:
 - Wall thickness: 0.2 units
 
 ### Grid System
+
 - With snap to grid: 0.5 unit increments
 - Good for alignment
 - Creates modular designs

@@ -9,20 +9,18 @@
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(to bottom,
-      rgb(var(--background-start-rgb)),
-      rgb(var(--background-end-rgb)));
   margin: 0;
   padding: 0;
   overflow: hidden;
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+    to bottom,
+    rgb(var(--background-start-rgb)),
+    rgb(var(--background-end-rgb))
+  );
 }
 
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
-
   .glass {
     background: rgba(17, 24, 39, 0.7);
     backdrop-filter: blur(12px) saturate(180%);
@@ -46,21 +44,11 @@ body {
   }
 }
 
-/* Three.js canvas styles */
 canvas {
   display: block;
   outline: none;
 }
 
-/* Prevent text selection during 3D interactions */
-.no-select {
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-}
-
-/* Custom scrollbar for sidebars */
 ::-webkit-scrollbar {
   width: 6px;
 }
@@ -78,13 +66,24 @@ canvas {
   background: rgba(255, 255, 255, 0.3);
 }
 
-/* Disable button when empty */
-button:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
+/* Number inputs in the details panel read better without the spinners. */
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
 }
 
-/* Smooth transitions */
-* {
-  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
+input[type='number'] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

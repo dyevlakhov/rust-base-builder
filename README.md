@@ -22,10 +22,12 @@ A 3D web application for planning and designing bases in the survival game **Rus
 ## 🎮 Rust Game Building Blocks
 
 ### Foundations
+
 - **Square Foundation** 🟫 - Standard 3x3 foundation
 - **Triangle Foundation** 🔺 - Triangular foundation for corners
 
 ### Walls
+
 - **Full Wall** 🧱 - Standard full-height wall
 - **Half Wall** 📦 - Half-height wall (mid-tier)
 - **Low Wall** ▬ - Low wall for protection
@@ -34,19 +36,23 @@ A 3D web application for planning and designing bases in the survival game **Rus
 - **Wall Frame** ▢ - Open wall frame
 
 ### Floors & Ceilings
+
 - **Square Floor** 🟦 - Standard square floor
 - **Triangle Floor** 🔷 - Triangular floor piece
 - **Floor Frame** ⊞ - Floor grate (see-through)
 
 ### Roofs
+
 - **Square Roof** 🔳 - Flat square roof
 - **Triangle Roof** 🔼 - Sloped triangular roof
 
 ### Stairs
+
 - **L-Shaped Stairs** 🪜 - L-shaped staircase
 - **U-Shaped Stairs** ⛏️ - U-shaped staircase
 
 ### Doors
+
 - **Wooden Door** 🚪 - Basic wooden door (200 HP)
 - **Sheet Metal Door** 🔒 - Metal door (250 HP)
 - **Armored Door** 🛡️ - Armored door (800 HP)
@@ -111,6 +117,7 @@ Open [http://localhost:3000](http://localhost:3000)
 ### Editing Blocks
 
 Click any block to:
+
 - Change building tier (upgrade/downgrade)
 - Adjust position (3x3 grid units)
 - Rotate (90° increments recommended)
@@ -120,6 +127,7 @@ Click any block to:
 ## 📐 Grid System
 
 The grid follows Rust's building system:
+
 - **1 Grid Square = 3x3 meters**
 - **1 Foundation = 3x3 meters**
 - **1 Wall Height = 3 meters**
@@ -128,12 +136,14 @@ The grid follows Rust's building system:
 ## 💡 Base Building Tips
 
 ### For Beginners
+
 - Start with a 2x2 foundation layout (4 square foundations)
 - Use airlock design (2 doors in sequence) for security
 - Place TC (Tool Cupboard) in center, protected
 - Add triangle foundations to fill gaps
 
 ### For Advanced Builders
+
 - Plan loot room locations in core
 - Calculate raid cost vs build cost
 - Use honeycomb (external shell) for protection
@@ -141,6 +151,7 @@ The grid follows Rust's building system:
 - Plan for bunker design
 
 ### Resource Optimization
+
 - Start with Wood, upgrade to Stone
 - Prioritize TC area with Armored
 - Use Metal for important rooms
@@ -149,6 +160,7 @@ The grid follows Rust's building system:
 ## 📊 Resource Calculator
 
 The app automatically calculates total resources needed:
+
 - 🪵 **Wood**: Total wood required
 - 🪨 **Stone**: Total stone required
 - ⚙️ **Metal Fragments**: Total metal frags
@@ -164,9 +176,11 @@ The app automatically calculates total resources needed:
 ## 📁 Export & Import
 
 ### Export
+
 Click "Export" to save your base design as JSON. Share with teammates or save for later!
 
 ### Import (Coming Soon)
+
 Load previously saved designs to continue editing.
 
 ## 🎮 Use Cases
@@ -204,6 +218,7 @@ Load previously saved designs to continue editing.
 Contributions welcome! This tool is for the Rust community.
 
 Ideas for contributions:
+
 - More building block types
 - Trap designs
 - Base templates

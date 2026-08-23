@@ -19,6 +19,7 @@ Open [http://localhost:3000](http://localhost:3000)
 ### Step 1: Choose Your Building Tier
 
 In the left panel, you'll see 5 building tiers:
+
 - **Twig** (brown) - 10 HP, cheap but weak
 - **Wood** (dark brown) - 250 HP, early game
 - **Stone** (gray) - 500 HP, solid mid-game
@@ -80,6 +81,7 @@ You now have a 2x2 base (4 foundations in a square)!
 ## New Click-to-Place System
 
 The builder now uses a **click-to-place** system:
+
 1. Click a block type in the left panel
 2. Your cursor becomes a crosshair
 3. A ghost preview shows where the block will appear
@@ -122,6 +124,7 @@ The builder now uses a **click-to-place** system:
 ## Understanding the Grid
 
 **Rust uses a 3x3 meter grid system:**
+
 - 1 Foundation = 3×3 meters = 1 grid square
 - 1 Wall height = 3 meters
 - Position X=3 = move 1 foundation right
@@ -130,13 +133,13 @@ The builder now uses a **click-to-place** system:
 
 ## Building Tiers & Health
 
-| Tier | HP | Cost | When to Use |
-|------|------|------|-------------|
-| Twig | 10 | 100 Wood | Planning only |
-| Wood | 250 | 300 Wood | Early game, inner walls |
-| Stone | 500 | 300 Stone | Main base structure |
-| Metal | 1000 | 200 Metal + 25 HQM | Important rooms |
-| Armored | 2000 | 25 HQM + 5 Gears | TC room, loot rooms |
+| Tier    | HP   | Cost               | When to Use             |
+| ------- | ---- | ------------------ | ----------------------- |
+| Twig    | 10   | 100 Wood           | Planning only           |
+| Wood    | 250  | 300 Wood           | Early game, inner walls |
+| Stone   | 500  | 300 Stone          | Main base structure     |
+| Metal   | 1000 | 200 Metal + 25 HQM | Important rooms         |
+| Armored | 2000 | 25 HQM + 5 Gears   | TC room, loot rooms     |
 
 ## Common Base Designs
 
@@ -169,6 +172,7 @@ The builder now uses a **click-to-place** system:
 ### Security
 
 ✅ **DO:**
+
 - Use airlock (double doors)
 - Place TC in center, protected
 - Use triangle foundations to fill gaps
@@ -176,6 +180,7 @@ The builder now uses a **click-to-place** system:
 - Upgrade TC room to Armored
 
 ❌ **DON'T:**
+
 - Use single door entrance
 - Place TC near outer walls
 - Leave foundation gaps
@@ -201,17 +206,20 @@ The builder now uses a **click-to-place** system:
 ## Controls Reference
 
 ### Camera
+
 - **Left Click + Drag**: Rotate view
 - **Right Click + Drag**: Pan camera
 - **Mouse Wheel**: Zoom in/out
 
 ### Building
+
 - **Click Block Type**: Add to base
 - **Click 3D Block**: Select for editing
 - **Position Inputs**: Move in 3m increments
 - **Rotation**: Use 90° for walls
 
 ### View Modes
+
 - **3D**: Default design view
 - **TOP**: Floor plan view
 - **FRONT**: Elevation view
@@ -220,6 +228,7 @@ The builder now uses a **click-to-place** system:
 ## Resource Calculator
 
 Watch the header bar for real-time costs:
+
 - 🪵 Wood total
 - 🪨 Stone total
 - ⚙️ Metal Fragments total
@@ -280,24 +289,28 @@ Import feature coming soon!
 ## Troubleshooting
 
 ### Blocks not snapping to grid
+
 - Make sure "Snap to Grid (3x3)" is enabled
 - Use position values in multiples of 3
 
 ### Can't see my base
+
 - Zoom out with mouse wheel
 - Switch to TOP view mode
 - Check blocks aren't stacked exactly
 
 ### Walls not aligning
+
 - Check Y rotation (0° or 90° usually)
 - Ensure position matches grid (X,Z in multiples of 3)
 - Wall thickness should be 0.15m
 
 ## Ready to Build!
 
-You're now ready to plan epic Rust bases! 
+You're now ready to plan epic Rust bases!
 
 **Remember:**
+
 - Start simple, expand later
 - Security > Size
 - Plan before you build in-game

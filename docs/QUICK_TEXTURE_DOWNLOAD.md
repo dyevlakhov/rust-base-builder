@@ -8,26 +8,31 @@ The procedural textures now look much more like Rust, but if you want **real hig
 2. Search and download these textures:
 
 ### For Twig Tier:
+
 - Search: "wood", "branches", "sticks"
 - Download: `wood_planks_01` or similar
 - Files needed: `diffuse.jpg`, `normal.jpg`, `roughness.jpg`
 
 ### For Wood Tier:
+
 - Search: "wood planks", "wooden boards"
 - Download: `wood_planks_02` or `wood_planks_03`
 - Files needed: `diffuse.jpg`, `normal.jpg`, `roughness.jpg`
 
 ### For Stone Tier:
+
 - Search: "concrete", "stone", "cement"
 - Download: `concrete_wall_01` or `stone_wall_01`
 - Files needed: `diffuse.jpg`, `normal.jpg`, `roughness.jpg`
 
 ### For Metal Tier:
+
 - Search: "corrugated metal", "sheet metal", "metal"
 - Download: `metal_01` or `corrugated_metal_01`
 - Files needed: `diffuse.jpg`, `normal.jpg`, `roughness.jpg`, `metalness.jpg`
 
 ### For Armored Tier:
+
 - Search: "metal", "steel", "armor plate"
 - Download: `metal_plate_01` or `steel_01`
 - Files needed: `diffuse.jpg`, `normal.jpg`, `roughness.jpg`, `metalness.jpg`
@@ -66,6 +71,7 @@ After downloading textures, rename them using this pattern:
 ```
 
 Example:
+
 - `concrete_wall_01_diffuse.jpg` → `stone_foundation_diffuse.jpg`
 - `concrete_wall_01_normal.jpg` → `stone_foundation_normal.jpg`
 - `concrete_wall_01_roughness.jpg` → `stone_foundation_roughness.jpg`
@@ -87,6 +93,7 @@ Example:
 ## Current Procedural Textures
 
 The procedural textures now include:
+
 - ✅ Twig: Vertical stick bundle pattern
 - ✅ Wood: Horizontal wood grain
 - ✅ Stone: Concrete aggregate pattern
@@ -94,4 +101,3 @@ The procedural textures now include:
 - ✅ Armored: Smooth metal with rivets
 
 These look much more like Rust now, but real textures will look even better!
-

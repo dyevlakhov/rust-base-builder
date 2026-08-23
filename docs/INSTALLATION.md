@@ -21,6 +21,7 @@ npm install
 ```
 
 This will install:
+
 - **Three.js** (0.160.0) - 3D graphics engine
 - **@react-three/fiber** (8.15.12) - React renderer for Three.js
 - **@react-three/drei** (9.92.7) - Useful helpers for R3F
@@ -34,6 +35,7 @@ npm run dev
 ```
 
 If successful, you should see:
+
 ```
 ✓ Ready in Xms
 ○ Local: http://localhost:3000
@@ -44,6 +46,7 @@ If successful, you should see:
 Navigate to [http://localhost:3000](http://localhost:3000)
 
 You should see:
+
 - Dark themed UI
 - Left sidebar with building blocks (Foundation, Wall, Door, etc.)
 - Large 3D canvas in the center with grid
@@ -54,25 +57,30 @@ You should see:
 After installation, your `node_modules` should include:
 
 ### Core 3D Libraries
+
 - `three` - The 3D engine
 - `@react-three/fiber` - React integration
 - `@react-three/drei` - 3D helpers (OrbitControls, Sky, Grid, etc.)
 
 ### Framework
+
 - `next` - Next.js framework
 - `react` & `react-dom` - React library
 
 ### State & Utilities
+
 - `zustand` - State management
 - `lucide-react` - Icons
 - `clsx` - Class utilities
 
 ### Styling
+
 - `tailwindcss` - CSS framework
 - `postcss` - CSS processor
 - `autoprefixer` - CSS vendor prefixes
 
 ### TypeScript
+
 - `typescript` - Language
 - `@types/*` - Type definitions
 
@@ -90,10 +98,12 @@ npm install
 ### Issue: Canvas is black/not showing
 
 **Causes**:
+
 1. Three.js not installed correctly
 2. Browser doesn't support WebGL
 
 **Solution**:
+
 1. Check browser console for errors
 2. Verify WebGL support: visit https://get.webgl.org/
 3. Try a different browser (Chrome recommended)
@@ -138,11 +148,13 @@ After installation, verify:
 ## System Requirements
 
 ### Minimum
+
 - Node.js 18.0 or higher
 - 2GB RAM
 - Modern browser with WebGL support
 
 ### Recommended
+
 - Node.js 20.0 or higher
 - 4GB RAM
 - Chrome or Firefox (latest)
@@ -151,31 +163,37 @@ After installation, verify:
 ## Browser Compatibility
 
 ### Fully Supported
+
 - ✅ Chrome 90+
 - ✅ Firefox 88+
 - ✅ Safari 15+
 - ✅ Edge 90+
 
 ### Partial Support
+
 - ⚠️ Mobile browsers (limited 3D performance)
 - ⚠️ Older browsers (may need polyfills)
 
 ### Not Supported
+
 - ❌ Internet Explorer (no WebGL 2.0)
 
 ## Performance Notes
 
 ### Good Performance (60 FPS)
+
 - Up to 100 building blocks
 - Modern discrete GPU
 - Desktop browser
 
 ### Acceptable Performance (30-60 FPS)
+
 - 50-100 blocks
 - Integrated GPU
 - Laptop
 
 ### Lower Performance
+
 - 100+ blocks may slow down
 - Very old hardware
 - Mobile devices
@@ -183,12 +201,14 @@ After installation, verify:
 ## Development Mode vs Production
 
 ### Development (`npm run dev`)
+
 - Hot reload enabled
 - Source maps for debugging
 - Larger bundle size
 - Slower initial load
 
 ### Production (`npm run build` then `npm start`)
+
 - Optimized bundle
 - Faster loading
 - Smaller size
@@ -215,21 +235,23 @@ If installation issues persist:
 ## Common npm Errors
 
 ### EACCES (Permission Denied)
+
 ```bash
 sudo chown -R $(whoami) ~/.npm
 sudo chown -R $(whoami) /usr/local/lib/node_modules
 ```
 
 ### ERESOLVE (Dependency Conflicts)
+
 ```bash
 npm install --legacy-peer-deps
 ```
 
 ### Network Issues
+
 ```bash
 npm config set registry https://registry.npmjs.org/
 npm install
 ```
 
 Happy building! 🏗️
-

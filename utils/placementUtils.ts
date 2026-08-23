@@ -1,222 +1,257 @@
-import { BuildingBlock, BlockType } from '@/types/building-blocks'
+import {
+  BlockCategory,
+  BlockType,
+  BuildingBlock,
+  FOUNDATION_TOP,
+  WALL_TOP,
+  getBlockTemplate,
+} from '@/types/building-blocks'
+import {
+  isWallOnNorthSouthEdge,
+  resolveTriangleAttachment,
+  snapPosition,
+  snapToCellCentre,
+  triangleAttachDistance,
+} from './snapUtils'
 
-// Block height constants
-export const BLOCK_HEIGHTS = {
-  foundation: 0.3,
-  wallFull: 3.0,
-  wallHalf: 1.5,
-  wallLow: 1.0,
-  floor: 0.2,
-} as const
+/** Two pieces are considered to be at the same snap point within this distance. */
+const SNAP_EPSILON = 0.1
 
-// Default Y positions
-export const DEFAULT_Y_POSITIONS = {
-  foundation: 0.15,
-  wallFull: 1.8, // 0.3 (foundation) + 1.5 (half wall height)
-  wallHalf: 1.05, // 0.3 + 0.75
-  wallLow: 0.8, // 0.3 + 0.5
-  floor: 3.4, // On top of walls
-} as const
+/** Pieces touching exactly at their faces are allowed; deeper than this is an overlap. */
+const STACK_TOLERANCE = 0.05
 
-export function getBlockHeight(blockType: BlockType): number {
-  if (blockType === 'wall-half') return BLOCK_HEIGHTS.wallHalf
-  if (blockType === 'wall-low') return BLOCK_HEIGHTS.wallLow
-  if (blockType.includes('wall') || blockType.includes('doorway') || blockType.includes('window') || blockType.includes('frame')) {
-    return BLOCK_HEIGHTS.wallFull
+/** How far below a floor we look for something to rest it on. */
+const FLOOR_SUPPORT_RADIUS = 2.2
+
+/** Probe height used to look "down" at the whole scene before a Y is known. */
+const PROBE_Y = 1000
+
+export function getBlockHeight(type: BlockType): number {
+  return getBlockTemplate(type).defaultSize[1]
+}
+
+export function getCategory(type: BlockType): BlockCategory {
+  return getBlockTemplate(type).category
+}
+
+export function isFoundation(type: BlockType): boolean {
+  return getCategory(type) === 'foundation'
+}
+
+export function isWall(type: BlockType): boolean {
+  return getCategory(type) === 'wall'
+}
+
+export function isFloor(type: BlockType): boolean {
+  return getCategory(type) === 'floor'
+}
+
+export function isTriangle(type: BlockType): boolean {
+  return getBlockTemplate(type).isTriangle
+}
+
+/** Resting height for a piece with nothing underneath it. */
+export function getDefaultY(type: BlockType): number {
+  const height = getBlockHeight(type)
+
+  switch (getCategory(type)) {
+    case 'foundation':
+      return height / 2
+    case 'wall':
+      return FOUNDATION_TOP + height / 2
+    case 'floor':
+      return WALL_TOP + height / 2
   }
-  if (blockType.includes('floor')) return BLOCK_HEIGHTS.floor
-  return BLOCK_HEIGHTS.foundation
 }
 
-export function getDefaultY(blockType: BlockType): number {
-  if (blockType === 'wall-half') return DEFAULT_Y_POSITIONS.wallHalf
-  if (blockType === 'wall-low') return DEFAULT_Y_POSITIONS.wallLow
-  if (blockType.includes('wall') || blockType.includes('doorway') || blockType.includes('window') || blockType.includes('frame')) {
-    return DEFAULT_Y_POSITIONS.wallFull
+// ---------------------------------------------------------------------------
+// Occupancy
+//
+// Rather than comparing every pair of blocks with ad-hoc distance thresholds,
+// each piece claims one or more named horizontal slots. Two pieces collide when
+// they claim the same slot and their vertical spans actually overlap. This keeps
+// the rules in one place and makes them straightforward to unit test.
+// ---------------------------------------------------------------------------
+
+export interface Occupancy {
+  key: string
+  bottom: number
+  top: number
+}
+
+function slotKey(prefix: string, x: number, z: number): string {
+  // Quantise so that floating point noise from the snap maths cannot split a slot.
+  return `${prefix}:${Math.round(x * 100) / 100},${Math.round(z * 100) / 100}`
+}
+
+/** Unit vector the triangle's apex points along, derived from its Y rotation. */
+export function apexDirection(rotationY: number): [number, number] {
+  return [Math.sin(rotationY), Math.cos(rotationY)]
+}
+
+/**
+ * Slots claimed by a piece at `position` with `rotation`.
+ *
+ * - square foundations and floors claim their grid cell
+ * - triangles claim the whole cell they reach into (a conservative simplification:
+ *   two triangles never share a cell, even when they would geometrically fit)
+ * - walls claim the cell edge they were snapped to
+ */
+export function getOccupancy(
+  type: BlockType,
+  position: [number, number, number],
+  rotationY: number,
+  gridSize: number
+): Occupancy[] {
+  const template = getBlockTemplate(type)
+  const height = template.defaultSize[1]
+  const bottom = position[1] - height / 2
+  const top = position[1] + height / 2
+
+  if (template.category === 'wall') {
+    return [{ key: slotKey('edge', position[0], position[2]), bottom, top }]
   }
-  if (blockType.includes('floor')) return DEFAULT_Y_POSITIONS.floor
-  return DEFAULT_Y_POSITIONS.foundation
+
+  if (template.isTriangle) {
+    const [dx, dz] = apexDirection(rotationY)
+    const reach = gridSize - triangleAttachDistance(gridSize)
+    const [cellX, cellZ] = snapToCellCentre(
+      position[0] + dx * reach,
+      position[2] + dz * reach,
+      gridSize
+    )
+    return [{ key: slotKey('cell', cellX, cellZ), bottom, top }]
+  }
+
+  const [cellX, cellZ] = snapToCellCentre(position[0], position[2], gridSize)
+  return [{ key: slotKey('cell', cellX, cellZ), bottom, top }]
 }
 
-export function isFoundation(blockType: BlockType): boolean {
-  return blockType.includes('foundation')
+function spansOverlap(a: Occupancy, b: Occupancy): boolean {
+  return a.bottom < b.top - STACK_TOLERANCE && a.top > b.bottom + STACK_TOLERANCE
 }
 
-export function isWall(blockType: BlockType): boolean {
-  return blockType.includes('wall') || blockType.includes('doorway') || blockType.includes('window') || blockType.includes('frame')
-}
-
-export function isFloor(blockType: BlockType): boolean {
-  return blockType.includes('floor')
-}
-
-export function isTriangle(blockType: BlockType): boolean {
-  return blockType.includes('triangle')
-}
-
-// Collision detection helpers
-export function checkFoundationOverlap(
+/** True when the piece can be placed without intersecting anything already there. */
+export function canPlace(
   blocks: BuildingBlock[],
   position: [number, number, number],
-  blockType: BlockType
+  rotation: [number, number, number],
+  type: BlockType,
+  gridSize: number
 ): boolean {
-  const isPlacingSquare = blockType.includes('square')
-  const overlapThreshold = isTriangle(blockType) ? 0.8 : 0.1
+  const claimed = getOccupancy(type, position, rotation[1], gridSize)
 
-  const overlappingFoundations = blocks.filter(block => {
-    if (!isFoundation(block.type)) return false
-    
-    const xDist = Math.abs(block.position[0] - position[0])
-    const zDist = Math.abs(block.position[2] - position[2])
-    const isAtSameXZ = xDist < overlapThreshold && zDist < overlapThreshold
-    const isAtFoundationHeight = Math.abs(block.position[1] - 0.15) < 0.2
-    
-    return isAtSameXZ && isAtFoundationHeight
-  })
+  for (const block of blocks) {
+    const existing = getOccupancy(block.type, block.position, block.rotation[1], gridSize)
+    for (const a of claimed) {
+      for (const b of existing) {
+        if (a.key === b.key && spansOverlap(a, b)) return false
+      }
+    }
+  }
 
-  return overlappingFoundations.length > 0
+  return true
 }
 
-export function checkBlockOverlap(
-  blocks: BuildingBlock[],
-  position: [number, number, number],
-  blockType: BlockType,
-  blockHeight: number
-): boolean {
-  const isWallType = isWall(blockType)
-  const isFloorType = isFloor(blockType)
-  
-  const overlappingBlocks = blocks.filter(block => {
-    // Skip foundations for non-foundation blocks
-    if (isFoundation(block.type) && !isFoundation(blockType)) return false
-    
-    const xDist = Math.abs(block.position[0] - position[0])
-    const zDist = Math.abs(block.position[2] - position[2])
-    
-    // Wall collision detection
-    if (isWallType) {
-      const isBlockWall = isWall(block.type)
-      if (isBlockWall) {
-        // Walls: check if at same edge position AND overlapping vertically
-        const sameX = xDist < 0.1
-        const sameZ = zDist < 0.1
-        
-        if (!sameX || !sameZ) return false // Not at same edge position
-        
-        // Check vertical overlap - walls can stack, so only block if they overlap in Y space
-        // Allow exact stacking (touching at edges) but prevent actual overlap
-        const blockBottom = block.position[1] - block.scale[1] / 2
-        const blockTop = block.position[1] + block.scale[1] / 2
-        const newBlockBottom = position[1] - blockHeight / 2
-        const newBlockTop = position[1] + blockHeight / 2
-        
-        // Small tolerance for floating point precision (0.05 units = 5cm)
-        const tolerance = 0.05
-        
-        // Overlap if blocks actually overlap (not just touching)
-        // Allow stacking when walls touch exactly at edges (within tolerance)
-        // Block only if there's actual penetration/overlap
-        // Check: new block overlaps if its bottom is below existing top AND its top is above existing bottom
-        // But allow exact touching (within tolerance)
-        const overlapsBottom = newBlockBottom < blockTop - tolerance
-        const overlapsTop = newBlockTop > blockBottom + tolerance
-        const verticalOverlap = overlapsBottom && overlapsTop
-        return verticalOverlap
-      }
-      // Wall vs non-wall: standard collision
-      const isAtSameXZ = xDist < 0.5 && zDist < 0.5
-      const blockBottom = block.position[1] - block.scale[1] / 2
-      const blockTop = block.position[1] + block.scale[1] / 2
-      const newBlockBottom = position[1] - blockHeight / 2
-      const newBlockTop = position[1] + blockHeight / 2
-      return isAtSameXZ && (newBlockBottom <= blockTop && newBlockTop >= blockBottom)
-    }
-    
-    // Floor collision detection
-    if (isFloorType) {
-      const isBlockFloor = isFloor(block.type)
-      if (isBlockFloor) {
-        // Floors: same grid center
-        return xDist < 0.1 && zDist < 0.1
-      }
-      // Floors don't collide with walls
-      if (isWall(block.type)) return false
-      // Standard collision for other blocks
-      const isAtSameXZ = xDist < 1.6 && zDist < 1.6
-      const blockBottom = block.position[1] - block.scale[1] / 2
-      const blockTop = block.position[1] + block.scale[1] / 2
-      const newBlockBottom = position[1] - blockHeight / 2
-      const newBlockTop = position[1] + blockHeight / 2
-      return isAtSameXZ && (newBlockBottom <= blockTop && newBlockTop >= blockBottom)
-    }
-    
-    // Default collision detection
-    const isAtSameXZ = xDist < 1.6 && zDist < 1.6
-    const blockBottom = block.position[1] - block.scale[1] / 2
-    const blockTop = block.position[1] + block.scale[1] / 2
-    const newBlockBottom = position[1] - blockHeight / 2
-    const newBlockTop = position[1] + blockHeight / 2
-    return isAtSameXZ && (newBlockBottom <= blockTop && newBlockTop >= blockBottom)
-  })
-
-  return overlappingBlocks.length > 0
-}
+// ---------------------------------------------------------------------------
+// Stacking
+// ---------------------------------------------------------------------------
 
 export function findHighestBlockBelow(
   blocks: BuildingBlock[],
   position: [number, number, number],
-  blockType: BlockType,
-  gridSize: number
+  type: BlockType
 ): BuildingBlock | null {
-  const isWallType = isWall(blockType)
-  const isFloorType = isFloor(blockType)
-  const threshold = isFloorType ? 2.2 : (isWallType ? 0.1 : 1.6)
+  const radius = isWall(type) ? SNAP_EPSILON : FLOOR_SUPPORT_RADIUS
 
-  const blocksBelow = blocks.filter(block => {
-    const xDist = Math.abs(block.position[0] - position[0])
-    const zDist = Math.abs(block.position[2] - position[2])
-    
-    if (isWallType) {
-      // Walls: exact edge position only
-      return xDist < 0.1 && zDist < 0.1 && block.position[1] < position[1]
+  let highest: BuildingBlock | null = null
+  let highestTop = -Infinity
+
+  for (const block of blocks) {
+    if (block.position[1] >= position[1]) continue
+    if (Math.abs(block.position[0] - position[0]) > radius) continue
+    if (Math.abs(block.position[2] - position[2]) > radius) continue
+
+    const top = block.position[1] + block.scale[1] / 2
+    if (top > highestTop) {
+      highestTop = top
+      highest = block
     }
-    
-    // Floors and others: wider threshold
-    return xDist <= threshold && zDist <= threshold && block.position[1] < position[1]
-  })
+  }
 
-  if (blocksBelow.length === 0) return null
-
-  return blocksBelow.reduce((highest, block) => {
-    const blockTop = block.position[1] + block.scale[1] / 2
-    const highestTop = highest.position[1] + highest.scale[1] / 2
-    return blockTop > highestTop ? block : highest
-  })
+  return highest
 }
 
+/** Y centre for a piece dropped at `position`, resting on whatever is underneath. */
 export function calculateYPosition(
   blocks: BuildingBlock[],
   position: [number, number, number],
-  blockType: BlockType,
-  gridSize: number,
-  snappedPosition?: [number, number, number]
+  type: BlockType
 ): number {
-  const blockHeight = getBlockHeight(blockType)
-  const defaultY = getDefaultY(blockType)
-  
-  if (isFoundation(blockType)) {
-    return DEFAULT_Y_POSITIONS.foundation
-  }
+  if (isFoundation(type)) return getDefaultY(type)
 
-  // Use snapped position if provided (for walls, this ensures we check the exact edge position)
-  const checkPosition = snappedPosition || position
-  const highestBelow = findHighestBlockBelow(blocks, checkPosition, blockType, gridSize)
-  
-  if (highestBelow) {
-    const topOfBlockBelow = highestBelow.position[1] + highestBelow.scale[1] / 2
-    return topOfBlockBelow + blockHeight / 2
-  }
+  const below = findHighestBlockBelow(blocks, position, type)
+  if (!below) return getDefaultY(type)
 
-  return defaultY
+  const topOfBelow = below.position[1] + below.scale[1] / 2
+  return topOfBelow + getBlockHeight(type) / 2
 }
 
+// ---------------------------------------------------------------------------
+// Rotation
+// ---------------------------------------------------------------------------
+
+/** Auto-orientation for a piece already snapped to `position`. */
+export function computeRotation(
+  blocks: BuildingBlock[],
+  position: [number, number, number],
+  type: BlockType,
+  gridSize: number
+): [number, number, number] {
+  const template = getBlockTemplate(type)
+
+  if (template.isTriangle) {
+    const { rotation } = resolveTriangleAttachment(blocks, position, type, gridSize)
+    return [0, rotation, 0]
+  }
+
+  if (template.category === 'wall') {
+    return [0, isWallOnNorthSouthEdge(position, gridSize) ? Math.PI / 2 : 0, 0]
+  }
+
+  return [0, 0, 0]
+}
+
+// ---------------------------------------------------------------------------
+// Placement
+// ---------------------------------------------------------------------------
+
+export interface Placement {
+  position: [number, number, number]
+  rotation: [number, number, number]
+  valid: boolean
+}
+
+/**
+ * Turn a point on the ground plane into a fully resolved placement.
+ *
+ * This is the single entry point used by the placement preview, by the click
+ * handler that commits a piece, and by the tests — so the ghost the user sees is
+ * always exactly the piece they get.
+ */
+export function resolvePlacement(
+  blocks: BuildingBlock[],
+  point: { x: number; z: number },
+  type: BlockType,
+  gridSize: number,
+  snapToGrid: boolean
+): Placement {
+  // Snap once from above to find the horizontal slot, resolve the height there,
+  // then snap again now that the level is known (triangles attach per level).
+  const coarse = snapPosition([point.x, PROBE_Y, point.z], type, snapToGrid, gridSize, blocks)
+  const y = calculateYPosition(blocks, coarse, type)
+  const position = snapPosition([point.x, y, point.z], type, snapToGrid, gridSize, blocks)
+  const rotation = computeRotation(blocks, position, type, gridSize)
+
+  return { position, rotation, valid: canPlace(blocks, position, rotation, type, gridSize) }
+}
