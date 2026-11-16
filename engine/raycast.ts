@@ -19,18 +19,57 @@ export interface Hit {
  * free to draw pieces however it likes (instanced, merged, with openings).
  */
 export function raycast(world: World, ray: Ray, maxDistance = 2000): Hit | null {
-  let best: Hit | null = null
+  const ground = intersectGround(ray)
+  const limit = ground ? Math.min(ground.t, maxDistance) : maxDistance
 
-  for (const piece of world.pieces.values()) {
-    const limit = best ? best.t : maxDistance
-    const hit = intersectPiece(piece, ray, limit)
-    if (hit) best = hit
+  // Walk the spatial hash cells the ray passes over, nearest first
+  // (Amanatides & Woo), testing only the pieces registered in them. A hit
+  // point always lies in a cell its piece is registered in, so once the best
+  // hit is nearer than where the ray leaves the current cell, nothing further
+  // along can beat it.
+  const { hash } = world
+  const size = hash.cellSize
+  const [ox, , oz] = ray.origin
+  const [dx, , dz] = ray.direction
+  let ix = hash.cellOf(ox)
+  let iz = hash.cellOf(oz)
+  const stepX = dx > 0 ? 1 : -1
+  const stepZ = dz > 0 ? 1 : -1
+  const flatX = Math.abs(dx) < 1e-12
+  const flatZ = Math.abs(dz) < 1e-12
+  const deltaX = flatX ? Infinity : size / Math.abs(dx)
+  const deltaZ = flatZ ? Infinity : size / Math.abs(dz)
+  let nextX = flatX ? Infinity : (dx > 0 ? (ix + 1) * size - ox : ox - ix * size) / Math.abs(dx)
+  let nextZ = flatZ ? Infinity : (dz > 0 ? (iz + 1) * size - oz : oz - iz * size) / Math.abs(dz)
+
+  let best: Hit | null = null
+  const tested = new Set<string>()
+
+  for (;;) {
+    const bucket = hash.cell(ix, iz)
+    if (bucket) {
+      for (const id of bucket) {
+        if (tested.has(id)) continue
+        tested.add(id)
+        const piece = world.pieces.get(id)
+        const hit: Hit | null = piece ? intersectPiece(piece, ray, best ? best.t : limit) : null
+        if (hit) best = hit
+      }
+    }
+
+    const exit = Math.min(nextX, nextZ)
+    if ((best && best.t <= exit) || exit > limit) break
+    if (nextX < nextZ) {
+      ix += stepX
+      nextX += deltaX
+    } else {
+      iz += stepZ
+      nextZ += deltaZ
+    }
   }
 
-  const ground = intersectGround(ray)
-  if (ground && ground.t < (best ? best.t : maxDistance)) best = ground
-
-  return best
+  if (best) return best
+  return ground && ground.t <= maxDistance ? ground : null
 }
 
 export function intersectGround(ray: Ray): Hit | null {
@@ -107,7 +146,7 @@ function intersectPiece(piece: Piece, ray: Ray, limit: number): Hit | null {
     // x/z plane makes (dz, −dx) of each edge point outwards.
     let nx = bz - az
     let nz = -(bx - ax)
-    const length = Math.hypot(nx, nz)
+    const length = Math.sqrt(nx * nx + nz * nz)
     nx /= length
     nz /= length
     // Guard against winding mistakes: the normal must point away from the centre.

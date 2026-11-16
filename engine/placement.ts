@@ -1,7 +1,7 @@
 import { PIECES, PieceDef, PieceType, Tier } from './catalog'
-import { CELL, ROTATION_STEP } from './constants'
+import { CELL, ROTATION_STEP, STOREY } from './constants'
 import { findCollision } from './collision'
-import { Ray, Vec3, direction, normalizeAngle, raySegmentDistance } from './math'
+import { Ray, Vec3, direction, normalizeAngle, rayPointDistance, raySegmentDistance } from './math'
 import { Piece, PieceSpec, axisOf, deckEdges, inradius, topOf } from './pieces'
 import { raycast, intersectGround } from './raycast'
 import { MIN_STABILITY, stabilityOf } from './support'
@@ -145,30 +145,53 @@ export function evaluatePlacement(world: World, spec: PieceSpec, ignoreId?: stri
 /** Sockets live on pieces up to this far from the piece they would build. */
 const SOURCE_REACH = CELL * 1.5
 
+const topCache = new WeakMap<World, number>()
+
+/** Height of the tallest piece, plus room for one more storey on top. */
+function buildCeiling(world: World): number {
+  let top = topCache.get(world)
+  if (top === undefined) {
+    top = 0
+    for (const piece of world.pieces.values()) top = Math.max(top, topOf(piece))
+    top += STOREY + SNAP_DISTANCE
+    topCache.set(world, top)
+  }
+  return top
+}
+
 /**
  * Pieces that could offer a socket the ray passes near: those around any point
  * of the ray up to what it hit. Searching only around the hit point is not
  * enough — aiming into the empty air above a wall puts the hit on the ground
- * far behind the base.
+ * far behind the base. Stretches of the ray above anything that could be built
+ * are skipped.
  */
 function sourcesAlong(world: World, ray: Ray, length: number): Piece[] {
   const found = new Map<string, Piece>()
-  const step = CELL
-  const steps = Math.ceil(length / step)
+  const ceiling = buildCeiling(world)
+  const [ox, oy, oz] = ray.origin
+  const [dx, dy, dz] = ray.direction
+
+  // Only the part of the ray below the ceiling can pass near a socket.
+  let start = 0
+  let end = length
+  if (oy > ceiling) {
+    if (dy >= 0) return []
+    start = (oy - ceiling) / -dy
+  } else if (dy > 0) {
+    end = Math.min(end, (ceiling - oy) / dy)
+  }
+  if (start > end) return []
+
+  const steps = Math.ceil((end - start) / CELL)
   for (let i = 0; i <= steps; i++) {
-    const t = Math.min(i * step, length)
-    const x = ray.origin[0] + ray.direction[0] * t
-    const y = ray.origin[1] + ray.direction[1] * t
-    const z = ray.origin[2] + ray.direction[2] * t
-    // Above the tallest possible build there is nothing to snap to.
-    if (y > MAX_BUILD_HEIGHT && ray.direction[1] < 0 && i < steps) continue
+    const t = Math.min(start + i * CELL, end)
+    const x = ox + dx * t
+    const z = oz + dz * t
     for (const piece of piecesNear(world, x, x, z, z, SOURCE_REACH)) found.set(piece.id, piece)
   }
   return [...found.values()]
 }
-
-/** Upper limit for the ray sampling shortcut; generous on purpose. */
-const MAX_BUILD_HEIGHT = 200
 
 /**
  * Turn the cursor ray into a placement.
@@ -194,6 +217,11 @@ export function solvePlacement(world: World, ray: Ray, tool: Tool): Placement | 
 
   const scored: { spec: PieceSpec; score: number }[] = []
   for (const source of sourcesAlong(world, ray, hit.t)) {
+    // No socket lands further than SOURCE_REACH from its source, so a source
+    // the ray passes far from cannot offer anything within SNAP_DISTANCE.
+    if (rayPointDistance(ray, [source.x, topOf(source), source.z]) > SOURCE_REACH + SNAP_DISTANCE) {
+      continue
+    }
     for (const spec of socketsOf(source, def, tool)) {
       const [bottom, top] = axisOf(spec)
       const score = raySegmentDistance(ray, bottom, top)

@@ -39,10 +39,13 @@ store/
 render/
   geometry.ts       Extruded meshes per piece type, with real openings
   materials.ts      One PBR material per tier
+  quality.ts        Quality levels and the frame monitor
 components/
   Scene3D.tsx       Canvas, grid, HUD
   scene/
-    Pieces.tsx            One memoised mesh per piece
+    Pieces.tsx            Instanced buckets per type × tier
+    RenderDriver.tsx      On-demand invalidation, adaptive quality, AO
+    PerfProbe.tsx         `?perf` overlay
     BuildController.tsx   Pointer → engine raycast → ghost / build / select
     SelectionOutline.tsx
     CameraRig.tsx, SceneEnvironment.tsx
@@ -87,6 +90,19 @@ with `useHydrated` to avoid a hydration mismatch.
 
 - Picking goes through the engine's raycast, not three.js meshes. The renderer
   is free to draw pieces however it likes.
+- **Instanced.** One `InstancedMesh` per piece type × tier, so a base costs a
+  few dozen draw calls whatever its size. Buckets are carried along patches
+  like the engine's derived data: building a piece re-uploads one bucket.
+- **On demand.** The canvas uses `frameloop="demand"` and draws nothing while
+  idle. Prop changes ask for a frame by themselves; `RenderDriver` wires up
+  the rest — store changes, textures finishing loading — and the build
+  controller and camera rig ask while the cursor, a view transition or a held
+  key needs frames.
+- **Adaptive quality.** `render/quality.ts` has three levels (pixel ratio,
+  ambient occlusion, shadow map size). A monitor steps down when frames
+  rendered back to back get slow and back up when there is headroom; idle gaps
+  between on-demand frames are ignored. `?quality=low|medium|high` pins a level.
+- The sun's shadow camera is fitted to the base's bounds.
 - Geometry is extruded from 2D outlines: doorways, windows and frames have real
   openings, edges are bevelled, and UVs are in metres so textures tile at real
   size on every face. One geometry per piece type, shared by all pieces.
@@ -94,9 +110,40 @@ with `useHydrated` to avoid a hydration mismatch.
 - The ghost and hover outline are moved by writing to three.js objects in
   `useFrame`, never through React state.
 
+## Performance
+
+The engine keeps derived data per immutable `World` and updates it from the
+parent world and the patch instead of recomputing:
+
+- per-piece footprints, edges and bounds are memoised by object;
+- the support graph (who holds whom up) is copied from the parent and only the
+  links of added or removed pieces are rediscovered;
+- stability is updated incrementally: adds propagate outwards, removals reset
+  and re-search only what depended on the removed pieces, tier changes reuse
+  the parent's values;
+- raycasts walk the spatial hash cells along the ray instead of testing every
+  piece.
+
+Measured on a 2400-piece base (three storeys, all tiers), production build:
+
+|                                         | Before         | After        |
+| --------------------------------------- | -------------- | ------------ |
+| Draw calls per frame                    | 1586           | 37           |
+| CPU in `renderer.render`                | 15.3 ms        | 1.6 ms       |
+| Frame time while orbiting, median / p95 | 16.7 / 26.2 ms | 8.3 / 9.8 ms |
+| Frames rendered while idle              | every frame    | none         |
+| Stability after building a piece        | 91 ms          | 0.2 ms       |
+| Demolishing a load-bearing ground wall  | 171 ms         | 3.3 ms       |
+| Raycast                                 | 603 µs         | 40 µs        |
+| Snapping the ghost, per frame           | 1.6–1.8 ms     | 0.5–0.75 ms  |
+
+With ambient occlusion on (high quality) the same base orbits at about 60 fps.
+`?perf` shows an FPS meter and publishes draw calls and render time on
+`window.__rbbPerf`; `?perf=spin` keeps the camera turning for measurements.
+
 ## Known limits
 
-- One mesh per piece. Instancing (one draw call per type × tier) is the next
-  rendering step.
+- Loading a large base runs one full stability search (about 50 ms at 2400
+  pieces); every later change is incremental.
 - No stairs, roofs, doors or deployables yet; no upkeep or raid cost.
 - Health is a tier property; nothing damages a piece.

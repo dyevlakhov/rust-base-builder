@@ -1,5 +1,6 @@
 'use client'
 
+import * as THREE from 'three'
 import { Canvas } from '@react-three/fiber'
 import { Grid, OrbitControls } from '@react-three/drei'
 import { CELL, PIECES, PlacementProblem } from '@/engine'
@@ -10,6 +11,8 @@ import { BuildController } from './scene/BuildController'
 import { CameraRig, VIEW_POSITIONS } from './scene/CameraRig'
 import { Pieces, noRaycast } from './scene/Pieces'
 import { SelectionOutline } from './scene/SelectionOutline'
+import { PerfProbe, perfEnabled } from './scene/PerfProbe'
+import { Effects, RenderDriver } from './scene/RenderDriver'
 import { EnvironmentMap, SceneLights } from './scene/SceneEnvironment'
 
 const CONTROLS: { keys: string; action: string }[] = [
@@ -27,6 +30,13 @@ const PROBLEM_TEXT: Record<PlacementProblem, string> = {
   collision: 'Blocked by another piece',
   unsupported: 'Nothing to attach to',
   unstable: 'Not stable enough',
+}
+
+function perfSpin(): boolean {
+  return (
+    typeof window !== 'undefined' &&
+    new URLSearchParams(window.location.search).get('perf') === 'spin'
+  )
 }
 
 function SceneContent() {
@@ -64,6 +74,9 @@ function SceneContent() {
       <Pieces />
       <SelectionOutline />
       <BuildController />
+      <RenderDriver />
+      <Effects />
+      {perfEnabled() && <PerfProbe />}
 
       <OrbitControls
         makeDefault
@@ -72,6 +85,9 @@ function SceneContent() {
         minDistance={3}
         maxDistance={140}
         enableDamping
+        // `?perf=spin` keeps the camera turning, for frame-time measurements.
+        autoRotate={perfSpin()}
+        autoRotateSpeed={6}
         dampingFactor={0.08}
       />
     </>
@@ -113,7 +129,12 @@ export function Scene3D() {
         camera={{ position: VIEW_POSITIONS['3d'], fov: 50, near: 0.3, far: 2000 }}
         // three 0.185 deprecates PCFSoftShadowMap, which a bare `shadows` selects.
         shadows="percentage"
+        // Draw only when something changes. See RenderDriver for what asks.
+        frameloop="demand"
         dpr={[1, 2]}
+        onCreated={({ gl }) => {
+          gl.toneMapping = THREE.AgXToneMapping
+        }}
         style={{ display: 'block', width: '100%', height: '100%' }}
       >
         <SceneContent />

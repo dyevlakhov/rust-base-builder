@@ -38,6 +38,16 @@ const ANISOTROPY = 8
 
 const loader = new THREE.TextureLoader()
 const materials = new Map<Tier, THREE.MeshStandardMaterial>()
+const listeners = new Set<() => void>()
+
+/**
+ * Be told when a material changes after creation (its textures arrived). The
+ * scene renders on demand, so it has to be asked to draw the new look.
+ */
+export function onMaterialsChange(listener: () => void): () => void {
+  listeners.add(listener)
+  return () => listeners.delete(listener)
+}
 
 function load(url: string, colorSpace: THREE.ColorSpace, tile: number): Promise<THREE.Texture> {
   return loader.loadAsync(url).then((texture) => {
@@ -82,6 +92,7 @@ export function tierMaterial(tier: Tier): THREE.MeshStandardMaterial {
       material.color.set(look.tint)
       // New maps change the shader's defines; recompile.
       material.needsUpdate = true
+      for (const listener of listeners) listener()
     })
     .catch(() => {
       // A missing texture leaves the flat fallback colour, which still reads.

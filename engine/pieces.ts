@@ -103,29 +103,47 @@ export function localFootprint(shape: PieceShape): readonly Vec2[] {
   return LOCAL_FOOTPRINTS[shape]
 }
 
-function toWorld(spec: PieceSpec, local: readonly Vec2[]): Vec2[] {
+function toWorld(spec: PieceSpec, local: readonly Vec2[]): readonly Vec2[] {
   return local.map(([x, z]) => {
     const [rx, rz] = rotate(x, z, spec.yaw)
     return [spec.x + rx, spec.z + rz] as const
   })
 }
 
-/** The visual footprint, in world space. */
-export function footprint(spec: PieceSpec): Vec2[] {
-  return toWorld(spec, LOCAL_FOOTPRINTS[PIECES[spec.type].shape])
+/**
+ * Memoise a derived property per piece object. Pieces are immutable, so a
+ * cached value can never go stale; a moved or re-tiered piece is a new object.
+ * The engine asks for the same footprints and edges many times per frame, and
+ * thousands of times when stability is recomputed.
+ */
+function perPiece<T>(derive: (spec: PieceSpec) => T): (spec: PieceSpec) => T {
+  const cache = new WeakMap<PieceSpec, T>()
+  return (spec) => {
+    let value = cache.get(spec)
+    if (value === undefined) {
+      value = derive(spec)
+      cache.set(spec, value)
+    }
+    return value
+  }
 }
 
+/** The visual footprint, in world space. */
+export const footprint = perPiece((spec) =>
+  toWorld(spec, LOCAL_FOOTPRINTS[PIECES[spec.type].shape])
+)
+
 /** The shrunken footprint used for overlap tests. */
-export function collisionFootprint(spec: PieceSpec): Vec2[] {
-  return toWorld(spec, LOCAL_COLLISION[PIECES[spec.type].shape])
-}
+export const collisionFootprint = perPiece((spec) =>
+  toWorld(spec, LOCAL_COLLISION[PIECES[spec.type].shape])
+)
 
 export function topOf(spec: PieceSpec): number {
   return spec.y + PIECES[spec.type].height
 }
 
 /** Edges of a deck piece at its top surface. Walls have none. */
-export function deckEdges(spec: PieceSpec): Edge[] {
+export const deckEdges = perPiece((spec): readonly Edge[] => {
   const { shape } = PIECES[spec.type]
   if (shape === 'wall') return []
 
@@ -139,7 +157,7 @@ export function deckEdges(spec: PieceSpec): Edge[] {
       y,
     }
   })
-}
+})
 
 /** Bottom and top of the piece's vertical axis, used to score how close the cursor is. */
 export function axisOf(spec: PieceSpec): [Vec3, Vec3] {
@@ -158,7 +176,7 @@ export interface Bounds {
   maxZ: number
 }
 
-export function boundsOf(spec: PieceSpec): Bounds {
+export const boundsOf = perPiece((spec): Bounds => {
   let minX = Infinity
   let maxX = -Infinity
   let minZ = Infinity
@@ -170,4 +188,4 @@ export function boundsOf(spec: PieceSpec): Bounds {
     if (z > maxZ) maxZ = z
   }
   return { minX, maxX, minY: spec.y, maxY: topOf(spec), minZ, maxZ }
-}
+})

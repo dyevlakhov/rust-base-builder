@@ -39,6 +39,7 @@ export function CameraRig() {
   const viewEpoch = useToolStore((state) => state.viewEpoch)
   const camera = useThree((state) => state.camera)
   const controls = useThree((state) => state.controls) as OrbitLikeControls | null
+  const invalidate = useThree((state) => state.invalidate)
 
   const destination = useRef(new THREE.Vector3(...VIEW_POSITIONS['3d']))
   const moving = useRef(false)
@@ -47,14 +48,17 @@ export function CameraRig() {
   useEffect(() => {
     destination.current.set(...VIEW_POSITIONS[viewMode])
     moving.current = true
+    // The canvas renders on demand; start the easing.
+    invalidate()
     // `viewEpoch` is the actual trigger: re-picking the current mode must also
     // re-frame, after the user has orbited away from it.
-  }, [viewMode, viewEpoch])
+  }, [viewMode, viewEpoch, invalidate])
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (!PAN_KEYS.has(event.key) || isTypingTarget(event.target)) return
       pressed.current.add(event.key)
+      invalidate()
       // Taking manual control cancels an in-flight view transition.
       moving.current = false
       event.preventDefault()
@@ -76,15 +80,18 @@ export function CameraRig() {
       window.removeEventListener('keyup', handleKeyUp)
       window.removeEventListener('blur', clear)
     }
-  }, [])
+  }, [invalidate])
 
   useFrame((_, delta) => {
     if (pressed.current.size > 0) {
       panCamera(camera, controls, pressed.current, delta)
+      // Keep frames coming while a key is held.
+      invalidate()
       return
     }
 
     if (!moving.current) return
+    invalidate()
 
     // Frame-rate independent easing towards the destination.
     const alpha = 1 - Math.pow(0.0001, delta)

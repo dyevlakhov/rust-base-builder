@@ -43,7 +43,10 @@ export function parallel(a: number, b: number): boolean {
 }
 
 export function distance2(a: Vec2, b: Vec2): number {
-  return Math.hypot(a[0] - b[0], a[1] - b[1])
+  // Not Math.hypot: it is several times slower in V8, and this is a hot path.
+  const dx = a[0] - b[0]
+  const dz = a[1] - b[1]
+  return Math.sqrt(dx * dx + dz * dz)
 }
 
 /**
@@ -76,7 +79,7 @@ function hasSeparatingAxis(a: readonly Vec2[], b: readonly Vec2[]): boolean {
       if (d > maxB) maxB = d
     }
 
-    const epsilon = 1e-6 * Math.hypot(ax, az)
+    const epsilon = 1e-6 * Math.sqrt(ax * ax + az * az)
     if (maxA <= minB + epsilon || maxB <= minA + epsilon) return true
   }
   return false
@@ -90,22 +93,46 @@ export function rayPointDistance(ray: Ray, p: Vec3): number {
   const vy = p[1] - oy
   const vz = p[2] - oz
   const t = Math.max(0, vx * dx + vy * dy + vz * dz)
-  return Math.hypot(vx - dx * t, vy - dy * t, vz - dz * t)
+  const ex = vx - dx * t
+  const ey = vy - dy * t
+  const ez = vz - dz * t
+  return Math.sqrt(ex * ex + ey * ey + ez * ez)
 }
 
-/** Distance between the ray and a segment, sampled finely enough for scoring. */
-export function raySegmentDistance(ray: Ray, a: Vec3, b: Vec3, samples = 6): number {
-  let best = Infinity
-  for (let i = 0; i <= samples; i++) {
-    const t = i / samples
-    const d = rayPointDistance(ray, [
-      a[0] + (b[0] - a[0]) * t,
-      a[1] + (b[1] - a[1]) * t,
-      a[2] + (b[2] - a[2]) * t,
-    ])
-    if (d < best) best = d
+/**
+ * Shortest distance between the ray and the segment a–b: closest points of the
+ * two lines, clamped to the ray's origin and the segment's ends.
+ */
+export function raySegmentDistance(ray: Ray, a: Vec3, b: Vec3): number {
+  const [ox, oy, oz] = ray.origin
+  const [dx, dy, dz] = ray.direction
+  const ux = b[0] - a[0]
+  const uy = b[1] - a[1]
+  const uz = b[2] - a[2]
+  const wx = ox - a[0]
+  const wy = oy - a[1]
+  const wz = oz - a[2]
+
+  const uu = ux * ux + uy * uy + uz * uz
+  const du = dx * ux + dy * uy + dz * uz
+  const dw = dx * wx + dy * wy + dz * wz
+  const uw = ux * wx + uy * wy + uz * wz
+  if (uu < 1e-12) return rayPointDistance(ray, a)
+
+  // Ray parameter t >= 0 (direction is unit length), segment parameter s in [0, 1].
+  const denom = uu - du * du
+  let s = denom > 1e-12 ? (uw - du * dw) / denom : 0
+  s = Math.min(1, Math.max(0, s))
+  let t = du * s - dw
+  if (t < 0) {
+    t = 0
+    s = Math.min(1, Math.max(0, uw / uu))
   }
-  return best
+
+  const ex = wx + dx * t - ux * s
+  const ey = wy + dy * t - uy * s
+  const ez = wz + dz * t - uz * s
+  return Math.sqrt(ex * ex + ey * ey + ez * ez)
 }
 
 /** Ray pointing from `from` towards `to`. */
@@ -113,6 +140,6 @@ export function rayBetween(from: Vec3, to: Vec3): Ray {
   const dx = to[0] - from[0]
   const dy = to[1] - from[1]
   const dz = to[2] - from[2]
-  const length = Math.hypot(dx, dy, dz)
+  const length = Math.sqrt(dx * dx + dy * dy + dz * dz)
   return { origin: from, direction: [dx / length, dy / length, dz / length] }
 }

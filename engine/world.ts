@@ -1,27 +1,37 @@
 import { CELL } from './constants'
 import { Bounds, Piece, boundsOf } from './pieces'
 
+/** Cell indices stay well inside this range for any base that fits on screen. */
+const KEY_SPAN = 1 << 20
+const KEY_OFFSET = KEY_SPAN >> 1
+
+function cellKey(ix: number, iz: number): number {
+  return (ix + KEY_OFFSET) * KEY_SPAN + (iz + KEY_OFFSET)
+}
+
 /**
  * Uniform grid over the ground plane that buckets pieces by their horizontal
  * bounds. Every query the engine makes is local — "what is near this socket",
- * "what could this piece collide with" — so this keeps them independent of the
- * size of the base.
+ * "what could this piece collide with", "what does this ray pass over" — so
+ * this keeps them independent of the size of the base.
  */
 export class SpatialHash {
-  private readonly cells = new Map<string, string[]>()
+  private readonly cells = new Map<number, string[]>()
 
-  constructor(private readonly cellSize = CELL) {}
+  constructor(readonly cellSize = CELL) {}
 
-  private range(min: number, max: number): [number, number] {
-    return [Math.floor(min / this.cellSize), Math.floor(max / this.cellSize)]
+  cellOf(value: number): number {
+    return Math.floor(value / this.cellSize)
   }
 
   insert(id: string, bounds: Bounds) {
-    const [x0, x1] = this.range(bounds.minX, bounds.maxX)
-    const [z0, z1] = this.range(bounds.minZ, bounds.maxZ)
+    const x0 = this.cellOf(bounds.minX)
+    const x1 = this.cellOf(bounds.maxX)
+    const z0 = this.cellOf(bounds.minZ)
+    const z1 = this.cellOf(bounds.maxZ)
     for (let x = x0; x <= x1; x++) {
       for (let z = z0; z <= z1; z++) {
-        const key = `${x},${z}`
+        const key = cellKey(x, z)
         const bucket = this.cells.get(key)
         if (bucket) bucket.push(id)
         else this.cells.set(key, [id])
@@ -29,13 +39,20 @@ export class SpatialHash {
     }
   }
 
+  /** Ids in one cell. The array is shared: do not modify it. */
+  cell(ix: number, iz: number): readonly string[] | undefined {
+    return this.cells.get(cellKey(ix, iz))
+  }
+
   query(minX: number, maxX: number, minZ: number, maxZ: number): Set<string> {
     const found = new Set<string>()
-    const [x0, x1] = this.range(minX, maxX)
-    const [z0, z1] = this.range(minZ, maxZ)
+    const x0 = this.cellOf(minX)
+    const x1 = this.cellOf(maxX)
+    const z0 = this.cellOf(minZ)
+    const z1 = this.cellOf(maxZ)
     for (let x = x0; x <= x1; x++) {
       for (let z = z0; z <= z1; z++) {
-        const bucket = this.cells.get(`${x},${z}`)
+        const bucket = this.cells.get(cellKey(x, z))
         if (bucket) for (const id of bucket) found.add(id)
       }
     }
@@ -92,11 +109,23 @@ export interface Patch {
   readonly add: readonly Piece[]
 }
 
+const origins = new WeakMap<World, { parent: World; patch: Patch }>()
+
+/**
+ * The world and patch a world was made from, if it came from `applyPatch`.
+ * Lets derived data be updated from the parent's instead of recomputed.
+ */
+export function originOf(world: World): { parent: World; patch: Patch } | undefined {
+  return origins.get(world)
+}
+
 export function applyPatch(world: World, patch: Patch): World {
   const next = new Map(world.pieces)
   for (const piece of patch.remove) next.delete(piece.id)
   for (const piece of patch.add) next.set(piece.id, piece)
-  return createWorld(next.values())
+  const result = createWorld(next.values())
+  origins.set(result, { parent: world, patch })
+  return result
 }
 
 export function invertPatch(patch: Patch): Patch {

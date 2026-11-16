@@ -29,6 +29,7 @@ const CLICK_SLOP_PX = 5
 export function BuildController() {
   const gl = useThree((state) => state.gl)
   const camera = useThree((state) => state.camera)
+  const invalidate = useThree((state) => state.invalidate)
   const activeType = useToolStore((state) => state.activeType)
 
   const ghostRef = useRef<THREE.Mesh>(null)
@@ -88,6 +89,8 @@ export function BuildController() {
         -((event.clientY - rect.top) / rect.height) * 2 + 1
       )
       pointerInside.current = true
+      // The ghost and hover outline follow the cursor; draw a frame.
+      invalidate()
     }
 
     const handleDown = (event: PointerEvent) => {
@@ -122,6 +125,7 @@ export function BuildController() {
 
     const handleLeave = () => {
       pointerInside.current = false
+      invalidate()
     }
 
     element.addEventListener('pointermove', track)
@@ -134,7 +138,7 @@ export function BuildController() {
       element.removeEventListener('pointerup', handleUp)
       element.removeEventListener('pointerleave', handleLeave)
     }
-  }, [gl, camera, raycaster])
+  }, [gl, camera, raycaster, invalidate])
 
   useFrame(() => {
     const ghost = ghostRef.current
