@@ -108,7 +108,7 @@ export function SceneLights() {
         shadow-normalBias={0.03}
       />
       <hemisphereLight args={['#b9d5ff', '#6b5a4a', 0.8]} />
-      <fog attach="fog" args={['#c3ccd4', 90, 380]} />
+      <fog attach="fog" args={['#b8c2c9', 70, 330]} />
       {/* `distance` must stay inside the camera's far plane or the dome is clipped away. */}
       <Sky distance={1500} sunPosition={[140, 180, 80]} turbidity={6} rayleigh={1.2} />
     </>

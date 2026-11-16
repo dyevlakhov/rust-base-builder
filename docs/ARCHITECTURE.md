@@ -4,7 +4,7 @@ A single-page Next.js app with no backend. Three layers, each depending only on
 the ones below it:
 
 ```
-ui (components/, hooks/)        panels, HUD, shortcuts
+ui (components/hud, hooks/)     HUD, shortcuts
   │
 store/                          React-facing state: the base + history, the tool
   │
@@ -40,8 +40,19 @@ render/
   geometry.ts       Extruded meshes per piece type, with real openings
   materials.ts      One PBR material per tier
   quality.ts        Quality levels and the frame monitor
+app/
+  page.tsx          Full-screen scene with the HUD layered over it
 components/
-  Scene3D.tsx       Canvas, grid, HUD
+  Scene3D.tsx       Canvas, ground, grid
+  hud/
+    TopBar.tsx            Undo/redo, camera views, import/export, clear, help
+    Hotbar.tsx            Tier chips, grid toggle, piece slots, placement line
+    PieceWheel.tsx        Hold-Q radial piece picker
+    Inspector.tsx         The selected piece
+    BaseSheet.tsx         Build cost, or how to start on an empty base
+    Keymap.tsx            Every control
+    keys.ts               Hotbar key assignments
+  icons/PieceIcon.tsx     Piece and resource silhouettes
   scene/
     Pieces.tsx            Instanced buckets per type × tier
     RenderDriver.tsx      On-demand invalidation, adaptive quality, AO
@@ -49,7 +60,7 @@ components/
     BuildController.tsx   Pointer → engine raycast → ghost / build / select
     SelectionOutline.tsx
     CameraRig.tsx, SceneEnvironment.tsx
-  Header.tsx, BlockPalette.tsx, BlockDetailsPanel.tsx, ...
+    Ground.tsx            Textured terrain that receives shadows
 tests/              Vitest: engine and store
 ```
 
@@ -147,3 +158,15 @@ With ambient occlusion on (high quality) the same base orbits at about 60 fps.
   pieces); every later change is incremental.
 - No stairs, roofs, doors or deployables yet; no upkeep or raid cost.
 - Health is a tier property; nothing damages a piece.
+
+## Interface
+
+The HUD is a set of plates over a full-screen canvas. Overlay containers are
+`pointer-events: none`, so the canvas receives every click that does not land
+on a plate.
+
+Design tokens live in `app/globals.css`: olive-graphite panels, bone ink, one
+signal amber for whatever is selected or about to happen, oxide red for
+demolition and errors. Blue is kept for the 3D ghost alone. Big Shoulders is
+the display face (names, numbers, keys; its stencil cut for the wordmark and
+hotbar keys), Archivo is the text face; numbers use tabular figures.

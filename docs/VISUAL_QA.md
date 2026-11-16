@@ -95,6 +95,12 @@ The one that breaks most often. Check every tier.
 - [ ] Undo / redo buttons and Ctrl+Z / Ctrl+Shift+Z work, including after a
       demolition.
 - [ ] Export, then Import, restores the same base.
+- [ ] The scene fills the window; clicks between HUD plates reach the canvas.
+- [ ] Number keys pick hotbar slots; the same key again puts the piece away.
+- [ ] Holding Q opens the wheel at the cursor; releasing over a slice picks it,
+      releasing in the centre picks nothing.
+- [ ] T cycles the tier chips; G toggles Grid and the chip shows it.
+- [ ] ? opens Controls; Escape closes it.
 - [ ] Clear and Demolish open the styled dialog, never a browser `confirm`.
 - [ ] Escape closes the dialog; Escape cancels placement mode.
 - [ ] Delete demolishes the selected piece, via the dialog.

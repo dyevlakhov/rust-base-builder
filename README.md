@@ -52,25 +52,32 @@ npm run format      # prettier --write
 
 ## Using it
 
-1. Pick a **tier** at the top of the left panel. New pieces are built at that tier.
-2. Pick a **piece**. A ghost follows the cursor and snaps to the nearest socket.
-3. **Click** to build. Red means it cannot go there; the HUD says why.
-4. **R** flips a wall to face the other way, or turns a free-standing foundation.
-5. **Escape** stops placing.
-6. **Click a piece** to select it — the right panel shows its health, stability
-   and cost, and lets you change its tier or demolish it.
+The scene fills the screen and the HUD floats over it.
 
-| Input                 | Action                        |
-| --------------------- | ----------------------------- |
-| Left drag             | Orbit                         |
-| Right drag            | Pan                           |
-| Scroll                | Zoom                          |
-| Arrow keys            | Move the camera               |
-| Page Up / Down        | Raise / lower the camera      |
-| R                     | Flip wall / rotate foundation |
-| Ctrl Z / Ctrl Shift Z | Undo / redo                   |
-| Escape                | Stop placing / deselect       |
-| Delete / Backspace    | Demolish the selected piece   |
+1. Press **1** for a foundation and click the ground. Everything else snaps onto
+   what is already built.
+2. Pick pieces from the **hotbar** with the number row, or hold **Q** for the
+   piece wheel and flick towards one.
+3. Pick a **tier** from the material chips above the hotbar, or press **T**.
+4. The line above the hotbar says whether the ghost can be built, what it
+   costs and how stable it would be. Click to build.
+5. **Click a piece** to inspect it: health, stability, cost, tier, upgrade
+   (**U**) and demolish (**Delete**).
+6. Press **?** for every control.
+
+| Input                   | Action                              |
+| ----------------------- | ----------------------------------- |
+| 1 – 9, 0, −, =          | Pick a hotbar piece                 |
+| Hold Q                  | Piece wheel                         |
+| R                       | Flip a wall, turn a lone foundation |
+| T / Shift T             | Next / previous tier                |
+| G                       | Grid snap for lone foundations      |
+| U                       | Upgrade the selected piece          |
+| Delete / Backspace      | Demolish the selected piece         |
+| Ctrl Z / Ctrl Shift Z   | Undo / redo                         |
+| Escape                  | Stop building, or deselect          |
+| Left / right drag       | Orbit / pan                         |
+| Scroll, arrows, PgUp/Dn | Zoom, move, raise / lower           |
 
 ## Building rules
 
@@ -80,8 +87,8 @@ equilateral. Sockets, collision, stability and the save format are described in
 
 ## Textures
 
-Each tier uses CC0 photoscanned PBR maps from Poly Haven, chosen to read like
-the game's tiers. Sources and credits are in
+Each tier, and the ground, uses CC0 photoscanned PBR maps from Poly Haven,
+chosen to read like the game. Sources and credits are in
 [public/textures/README.md](./public/textures/README.md).
 
 ## Tech stack

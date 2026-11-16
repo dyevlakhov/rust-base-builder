@@ -6,6 +6,7 @@ import { useDesignStore } from '@/store/useDesignStore'
 import { useToolStore } from '@/store/useToolStore'
 import { requestConfirmation, useConfirmStore } from '@/store/useConfirmStore'
 import { isTypingTarget } from '@/utils/dom'
+import { pieceForKey } from '@/components/hud/keys'
 
 /** Ask before demolishing, saying how much will come down with the piece. */
 export function requestDemolish(id: string) {
@@ -55,7 +56,35 @@ export function useAppShortcuts() {
         design.redo()
         return
       }
-      if (modifier) return
+      if (modifier || event.altKey) return
+
+      // Some keyboards and automation report Shift+/ rather than '?'.
+      if (event.key === '?' || (event.key === '/' && event.shiftKey)) {
+        tool.toggleKeymap()
+        return
+      }
+
+      // Number row: pick a hotbar piece; its own key again puts it away.
+      const piece = event.shiftKey ? null : pieceForKey(event.key)
+      if (piece) {
+        tool.setActiveType(tool.activeType === piece ? null : piece)
+        return
+      }
+
+      if (key === 't') {
+        tool.cycleTier(event.shiftKey ? -1 : 1)
+        return
+      }
+
+      if (key === 'g') {
+        tool.toggleSnap()
+        return
+      }
+
+      if (key === 'u' && tool.selectedId) {
+        design.upgrade(tool.selectedId)
+        return
+      }
 
       if (key === 'escape') {
         if (tool.activeType) tool.setActiveType(null)

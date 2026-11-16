@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
-import { PieceType, PlacementProblem, Tier } from '@/engine'
+import { PieceType, PlacementProblem, TIERS, Tier } from '@/engine'
 
 export type ViewMode = '3d' | 'top' | 'front' | 'side'
 
@@ -26,9 +26,14 @@ interface ToolState {
    * camera re-frames even when the mode itself did not change.
    */
   viewEpoch: number
+  /** The keyboard reference overlay. */
+  keymapOpen: boolean
 
   setActiveType: (type: PieceType | null) => void
   setTier: (tier: Tier) => void
+  /** Step through tiers, wrapping around. */
+  cycleTier: (direction: 1 | -1) => void
+  toggleKeymap: (open?: boolean) => void
   rotate: () => void
   toggleSnap: () => void
   select: (id: string | null) => void
@@ -47,10 +52,16 @@ export const useToolStore = create<ToolState>()(
       ghost: null,
       viewMode: '3d',
       viewEpoch: 0,
+      keymapOpen: false,
 
       setActiveType: (type) =>
         set({ activeType: type, rotation: 0, selectedId: null, ghost: null }),
       setTier: (tier) => set({ tier }),
+      cycleTier: (direction) => {
+        const index = TIERS.indexOf(get().tier)
+        set({ tier: TIERS[(index + direction + TIERS.length) % TIERS.length] })
+      },
+      toggleKeymap: (open) => set({ keymapOpen: open ?? !get().keymapOpen }),
       rotate: () => set({ rotation: get().rotation + 1 }),
       toggleSnap: () => set({ snap: !get().snap }),
       select: (id) => set({ selectedId: id }),

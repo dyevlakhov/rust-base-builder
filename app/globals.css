@@ -1,43 +1,64 @@
 @import 'tailwindcss';
 
-:root {
-  --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 17, 24, 39;
-  --background-end-rgb: 31, 41, 55;
+/*
+ * Field kit: the HUD reads as rugged builder's equipment laid over the scene.
+ * Olive-graphite plates, bone ink, one signal amber for whatever is chosen or
+ * about to happen, oxide red for demolition and errors. Blue belongs to the 3D
+ * ghost alone, so "this will fit" never gets confused with "this is selected".
+ */
+@theme {
+  --color-panel: #1e201b;
+  --color-slot: #2a2c25;
+  --color-edge: #3a3c33;
+  --color-ink: #e8e1d0;
+  --color-mute: #9c978a;
+  --color-signal: #f2a93b;
+  --color-oxide: #c6452f;
+  --color-sky: #3d9bff;
+  --color-moss: #8db255;
+}
+
+/*
+ * Fonts reference the variables next/font sets on <body>, so they must be
+ * inlined into utilities rather than resolved once on :root.
+ */
+@theme inline {
+  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-shoulders), ui-sans-serif, system-ui, sans-serif;
+  --font-stencil: var(--font-shoulders-stencil), var(--font-shoulders), sans-serif;
+}
+
+html,
+body {
+  height: 100%;
 }
 
 body {
   margin: 0;
-  padding: 0;
   overflow: hidden;
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-    to bottom,
-    rgb(var(--background-start-rgb)),
-    rgb(var(--background-end-rgb))
-  );
+  color: var(--color-ink);
+  background: #b8c2c9; /* the scene's fog colour, shown before the canvas paints */
+  font-family: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
 }
 
-@utility glass {
-  background: rgba(17, 24, 39, 0.7);
-  backdrop-filter: blur(12px) saturate(180%);
-  -webkit-backdrop-filter: blur(12px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+/* A plate of the kit: dark, slightly see-through, hard-edged. */
+@utility hud-panel {
+  background: color-mix(in srgb, var(--color-panel) 90%, transparent);
+  border: 1px solid rgb(232 225 208 / 0.09);
+  border-radius: 4px;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.04),
+    0 10px 28px rgb(0 0 0 / 0.32);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 
-@utility glass-light {
-  background: rgba(31, 41, 55, 0.6);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-@utility float {
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-}
-
-@utility float-sm {
-  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.25);
+/* Keyboard focus is always visible, in the signal colour. */
+:focus-visible {
+  outline: 2px solid var(--color-signal);
+  outline-offset: 2px;
 }
 
 canvas {
@@ -47,31 +68,12 @@ canvas {
 
 ::-webkit-scrollbar {
   width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgb(232 225 208 / 0.18);
   border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
-
-/* Number inputs in the details panel read better without the spinners. */
-input[type='number']::-webkit-outer-spin-button,
-input[type='number']::-webkit-inner-spin-button {
-  margin: 0;
-  -webkit-appearance: none;
-}
-
-input[type='number'] {
-  -moz-appearance: textfield;
-  appearance: textfield;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -1,8 +1,30 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter } from 'next/font/google'
+import { Archivo, Big_Shoulders, Big_Shoulders_Stencil } from 'next/font/google'
 import './globals.css'
 
-const inter = Inter({ subsets: ['latin'], display: 'swap' })
+/** Body and interface text. */
+const archivo = Archivo({
+  subsets: ['latin'],
+  display: 'swap',
+  axes: ['wdth'],
+  variable: '--font-archivo',
+})
+
+/** Condensed industrial display face for names, numbers and the hotbar. */
+const shoulders = Big_Shoulders({
+  subsets: ['latin'],
+  display: 'swap',
+  axes: ['opsz'],
+  variable: '--font-shoulders',
+})
+
+/** Stencil cut, used for the wordmark and hotbar key numbers only. */
+const shouldersStencil = Big_Shoulders_Stencil({
+  subsets: ['latin'],
+  display: 'swap',
+  weight: ['700', '800'],
+  variable: '--font-shoulders-stencil',
+})
 
 /**
  * Absolute base for canonical and Open Graph URLs.
@@ -46,14 +68,16 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: '#111827',
+  themeColor: '#1e201b',
   colorScheme: 'dark',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={`${archivo.variable} ${shoulders.variable} ${shouldersStencil.variable}`}>
+        {children}
+      </body>
     </html>
   )
 }

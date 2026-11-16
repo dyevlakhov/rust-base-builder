@@ -21,6 +21,10 @@ to read like each tier in Rust, then recompressed:
 | stone   | [castle_wall_slates](https://polyhaven.com/a/castle_wall_slates)     | Rob Tuytel                           |
 | metal   | [worn_corrugated_iron](https://polyhaven.com/a/worn_corrugated_iron) | Jenelle van Heerden, Dimitrios Savva |
 | armored | [metal_plate_02](https://polyhaven.com/a/metal_plate_02)             | Rob Tuytel                           |
+| ground  | [aerial_grass_rock](https://polyhaven.com/a/aerial_grass_rock)       | Rob Tuytel                           |
+
+Each tier folder also has `swatch.jpg`, a 192 px thumbnail of the colour map for
+the tier chips in the HUD.
 
 Do not add extracted game assets. This is a fan tool with no licence to
 redistribute Facepunch's artwork.

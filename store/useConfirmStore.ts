@@ -4,6 +4,8 @@ export interface ConfirmRequest {
   title: string
   message: string
   confirmLabel?: string
+  /** `destructive` (the default) paints the confirm button oxide red. */
+  tone?: 'destructive' | 'neutral'
   onConfirm: () => void
 }
 

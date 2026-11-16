@@ -37,29 +37,35 @@ export function ConfirmDialog() {
       role="dialog"
       aria-modal="true"
       aria-labelledby="confirm-dialog-title"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4"
       onClick={dismiss}
     >
-      <div
-        className="glass float w-full max-w-sm rounded-2xl border border-white/10 p-5 text-white"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <h2 id="confirm-dialog-title" className="text-base font-semibold">
+      <div className="hud-panel w-full max-w-sm p-5" onClick={(event) => event.stopPropagation()}>
+        <h2
+          id="confirm-dialog-title"
+          className="font-display text-2xl leading-tight font-semibold text-ink"
+        >
           {request.title}
         </h2>
-        <p className="mt-2 text-sm text-white/70">{request.message}</p>
+        <p className="mt-2 text-sm text-ink/75">{request.message}</p>
 
         <div className="mt-5 flex justify-end gap-2">
-          <button
-            onClick={dismiss}
-            className="glass-light rounded-lg px-4 py-2 text-sm text-white/80 transition-colors hover:bg-white/15 hover:text-white"
-          >
-            Cancel
-          </button>
+          {request.tone !== 'neutral' && (
+            <button
+              onClick={dismiss}
+              className="h-9 rounded-[3px] px-4 text-sm text-ink/80 transition-colors hover:bg-ink/10 hover:text-ink"
+            >
+              Cancel
+            </button>
+          )}
           <button
             ref={confirmRef}
             onClick={accept}
-            className="rounded-lg bg-red-500/90 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-red-400/60"
+            className={`h-9 rounded-[3px] px-4 text-sm font-semibold transition-colors ${
+              request.tone === 'neutral'
+                ? 'bg-signal text-panel hover:bg-signal/90'
+                : 'bg-oxide text-ink hover:bg-oxide/90'
+            }`}
           >
             {request.confirmLabel ?? 'Confirm'}
           </button>
