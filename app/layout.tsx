@@ -41,7 +41,7 @@ const siteUrl =
 
 const title = 'Rust Base Builder'
 const description =
-  'Plan and design a base for the survival game Rust in 3D — foundations, walls and floors on the game’s 3 m building grid, with a running resource cost.'
+  'Plan a base for the survival game Rust in 3D. Pieces snap to sockets the way they do in the game, with structural stability, real material textures and a running resource cost.'
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

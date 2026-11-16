@@ -1,20 +1,13 @@
 import { Piece, ResourceCost, pieceCost } from '@/engine'
 
-export const RESOURCE_LABELS: Record<keyof ResourceCost, { short: string; name: string }> = {
-  wood: { short: 'Wood', name: 'Wood' },
-  stone: { short: 'Stone', name: 'Stone' },
-  metalFragments: { short: 'Frags', name: 'Metal Fragments' },
-  hqm: { short: 'HQM', name: 'High Quality Metal' },
+export const RESOURCE_LABELS: Record<keyof ResourceCost, { name: string }> = {
+  wood: { name: 'Wood' },
+  stone: { name: 'Stone' },
+  metalFragments: { name: 'Metal Fragments' },
+  hqm: { name: 'High Quality Metal' },
 }
 
 const RESOURCE_KEYS = Object.keys(RESOURCE_LABELS) as (keyof ResourceCost)[]
-
-/** One line, e.g. "200 Metal Fragments". */
-export function formatCost(cost: ResourceCost): string {
-  return RESOURCE_KEYS.filter((key) => cost[key])
-    .map((key) => `${cost[key]} ${key === 'hqm' ? 'HQM' : RESOURCE_LABELS[key].name}`)
-    .join(' + ')
-}
 
 export function getTotalCost(pieces: Iterable<Piece>): ResourceCost {
   const total: ResourceCost = {}

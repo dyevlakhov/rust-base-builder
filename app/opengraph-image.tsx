@@ -18,8 +18,8 @@ export default function OpenGraphImage() {
         flexDirection: 'column',
         justifyContent: 'center',
         padding: '80px',
-        background: 'linear-gradient(135deg, #111827 0%, #1f2937 55%, #2b2018 100%)',
-        color: '#ffffff',
+        background: 'linear-gradient(160deg, #2a2c25 0%, #1e201b 60%, #171913 100%)',
+        color: '#e8e1d0',
         fontFamily: 'sans-serif',
       }}
     >
@@ -28,14 +28,12 @@ export default function OpenGraphImage() {
           display: 'flex',
           alignItems: 'center',
           gap: '18px',
-          fontSize: 26,
-          letterSpacing: 4,
-          textTransform: 'uppercase',
-          color: '#fb923c',
+          fontSize: 28,
+          color: '#f2a93b',
         }}
       >
-        <div style={{ width: 56, height: 6, background: '#fb923c', borderRadius: 3 }} />
-        Base planner
+        <div style={{ width: 56, height: 6, background: '#f2a93b', borderRadius: 2 }} />A 3D base
+        planner for Rust
       </div>
 
       <div style={{ display: 'flex', fontSize: 92, fontWeight: 700, marginTop: 28 }}>
@@ -49,11 +47,11 @@ export default function OpenGraphImage() {
           marginTop: 22,
           maxWidth: 880,
           lineHeight: 1.35,
-          color: 'rgba(255,255,255,0.72)',
+          color: 'rgba(232,225,208,0.72)',
         }}
       >
-        Lay out foundations, walls and floors on the game&apos;s 3 m grid — and see what the design
-        costs before you spend anything.
+        Every piece snaps to a socket the way it does in the game. See the stability and the cost
+        before you spend anything.
       </div>
 
       <div style={{ display: 'flex', gap: '14px', marginTop: 48 }}>
@@ -63,11 +61,12 @@ export default function OpenGraphImage() {
             style={{
               display: 'flex',
               padding: '12px 22px',
-              borderRadius: 12,
+              borderRadius: 3,
               fontSize: 24,
-              color: '#0b0f16',
+              color: '#e8e1d0',
               fontWeight: 600,
-              background: ['#C4A484', '#8A6244', '#8E8B85', '#9FB2CC', '#6E8A6E'][index],
+              border: index === 2 ? '2px solid #f2a93b' : '2px solid rgba(0,0,0,0.35)',
+              background: ['#8f7a5c', '#6e5238', '#6f6b64', '#5e5f60', '#3a3d40'][index],
             }}
           >
             {tier}
