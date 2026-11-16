@@ -1,8 +1,9 @@
 # Rust Base Builder
 
-A 3D planner for bases in the survival game **Rust**. Lay out foundations, walls
-and floors on the game's 3 m building grid and see what the design costs before
-you spend anything in-game.
+A 3D planner for bases in the survival game **Rust**. Build foundations, walls
+and floors the way the game does — every piece snaps to a socket on a piece that
+is already there — and see what the design costs before you spend anything
+in-game.
 
 ![Next.js](https://img.shields.io/badge/Next.js-16-black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue)
@@ -12,22 +13,23 @@ you spend anything in-game.
 
 ## What it does
 
-- **Eleven building pieces** — square and triangle foundations, four wall
-  variants plus doorway, window and wall frame, square and triangle floors, and
-  a floor frame.
-- **Grid snapping that mirrors the game.** Foundations and floors snap to cell
-  centres, walls to cell edges and auto-rotate to run along them, triangles
-  attach outwards from the edge of a square piece.
-- **Automatic stacking.** Pieces rest on whatever is underneath, so walls sit on
-  foundations and floors sit on walls without any height fiddling.
-- **Collision checking**, previewed live: the ghost turns red where a piece will
-  not fit.
-- **Five tiers** — Twig, Wood, Stone, Sheet Metal, Armored — each with its own
-  material, health and cost, switchable per piece after placing.
+- **Socket-based building, like the game.** Pieces attach to edges and wall tops
+  of what is already built: triangles chain off triangles (honeycomb, triangle
+  bases), walls stand on 60° edges, floors rest on walls on either side.
+- **Twelve pieces** — square and equilateral triangle foundations and floors,
+  floor frames, wall, half wall, low wall, doorway, window and wall frame, with
+  real openings.
+- **Aim at any storey.** The ghost goes where you are looking, from any camera
+  angle, and you can fill a gap under an existing upper floor.
+- **Structural stability.** Floors overhang a few tiles, towers lose stability
+  per storey, and nothing floats. Demolishing a piece collapses what it held up.
+- **Collision checking**, previewed live: the ghost is blue where a piece fits
+  and red where it does not, with the reason.
+- **Five tiers** — Twig, Wood, Stone, Sheet Metal, Armored — with CC0 photoscan
+  materials, health and cost per piece.
+- **Undo / redo** for everything, including demolitions.
 - **Running resource cost** for the whole base, in the header.
-- **Four camera presets** — 3D, top, front and side.
-- **Your design is saved** in the browser and restored on reload.
-- **Export to JSON.**
+- **Saved in the browser**, plus **export and import** as JSON.
 
 ## Getting started
 
@@ -50,37 +52,37 @@ npm run format      # prettier --write
 
 ## Using it
 
-1. Pick a **tier** at the top of the left panel. New pieces are placed at that tier.
-2. Pick a **piece** from the palette. The cursor turns into a crosshair and a
-   ghost follows it.
-3. **Click the ground** to place. Red means it will not fit there.
-4. **Escape** cancels placement.
-5. **Click a piece** to select it — the right panel shows its stats and lets you
-   change its tier, nudge its position, duplicate it or demolish it.
-6. **Delete** demolishes the selected piece.
+1. Pick a **tier** at the top of the left panel. New pieces are built at that tier.
+2. Pick a **piece**. A ghost follows the cursor and snaps to the nearest socket.
+3. **Click** to build. Red means it cannot go there; the HUD says why.
+4. **R** flips a wall to face the other way, or turns a free-standing foundation.
+5. **Escape** stops placing.
+6. **Click a piece** to select it — the right panel shows its health, stability
+   and cost, and lets you change its tier or demolish it.
 
-| Input              | Action                      |
-| ------------------ | --------------------------- |
-| Left drag          | Orbit                       |
-| Right drag         | Pan                         |
-| Scroll             | Zoom                        |
-| Arrow keys         | Move the camera             |
-| Page Up / Down     | Raise / lower the camera    |
-| Escape             | Cancel placement            |
-| Delete / Backspace | Demolish the selected piece |
+| Input                 | Action                        |
+| --------------------- | ----------------------------- |
+| Left drag             | Orbit                         |
+| Right drag            | Pan                           |
+| Scroll                | Zoom                          |
+| Arrow keys            | Move the camera               |
+| Page Up / Down        | Raise / lower the camera      |
+| R                     | Flip wall / rotate foundation |
+| Ctrl Z / Ctrl Shift Z | Undo / redo                   |
+| Escape                | Stop placing / deselect       |
+| Delete / Backspace    | Demolish the selected piece   |
 
-## Grid
+## Building rules
 
-One cell is 3 × 3 m, matching a square foundation. A full wall is 3 m tall. The
-exact numbers and the rules built on them are in
+A square or triangle edge is 3 m, a full wall and a storey are 3 m, triangles are
+equilateral. Sockets, collision, stability and the save format are described in
 [docs/BUILDING_ENGINE.md](./docs/BUILDING_ENGINE.md).
 
 ## Textures
 
-No texture assets ship with the repository — every material is generated
-procedurally at runtime, so a fresh clone renders with surface detail and no
-download step. Real PBR maps can be dropped into `public/textures/` and are
-picked up automatically; see [docs/MATERIALS.md](./docs/MATERIALS.md).
+Each tier uses CC0 photoscanned PBR maps from Poly Haven, chosen to read like
+the game's tiers. Sources and credits are in
+[public/textures/README.md](./public/textures/README.md).
 
 ## Tech stack
 
@@ -110,8 +112,8 @@ same on a locked-down network as it does anywhere else.
 ## Documentation
 
 - [Architecture](./docs/ARCHITECTURE.md) — layout, data flow, state, rendering
-- [Building engine](./docs/BUILDING_ENGINE.md) — dimensions, snapping, stacking, collision
-- [Materials](./docs/MATERIALS.md) — tiers, procedural textures, lighting
+- [Building engine](./docs/BUILDING_ENGINE.md) — sockets, aiming, collision, stability
+- [Materials](./docs/MATERIALS.md) — tiers, costs, textures, lighting
 - [Visual QA](./docs/VISUAL_QA.md) — the manual checklist for anything the tests cannot see
 
 ## Not implemented
@@ -119,9 +121,8 @@ same on a locked-down network as it does anywhere else.
 Listed here rather than in a features section, because the two are easy to
 confuse:
 
-- Importing an exported design
-- Undo / redo
 - Roofs, stairs, doors and deployables
+- Upkeep and raid cost
 - Any damage or raid simulation — health is a tier property, nothing reduces it
 
 ## Contributing

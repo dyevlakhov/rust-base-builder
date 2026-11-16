@@ -14,23 +14,24 @@ import {
   Triangle,
   type LucideIcon,
 } from 'lucide-react'
-import { BlockCategory, BlockType } from '@/types/building-blocks'
+import { PieceKind, PieceType } from '@/engine'
 
-const BLOCK_ICONS: Record<BlockType, LucideIcon> = {
-  'foundation-square': Square,
+const PIECE_ICONS: Record<PieceType, LucideIcon> = {
+  foundation: Square,
   'foundation-triangle': Triangle,
-  'wall-full': RectangleVertical,
+  floor: Layers,
+  'floor-triangle': Triangle,
+  'floor-frame': Grid3x3,
+  'floor-triangle-frame': Triangle,
+  wall: RectangleVertical,
   'wall-half': RectangleHorizontal,
   'wall-low': Minus,
   doorway: DoorOpen,
   window: AppWindow,
   'wall-frame': Frame,
-  'floor-square': Layers,
-  'floor-triangle': Triangle,
-  'floor-frame': Grid3x3,
 }
 
-const CATEGORY_ICONS: Record<BlockCategory, LucideIcon> = {
+const KIND_ICONS: Record<PieceKind, LucideIcon> = {
   foundation: Layers,
   wall: RectangleVertical,
   floor: Box,
@@ -41,16 +42,12 @@ interface IconProps {
   className?: string
 }
 
-export function BlockIcon({ type, size = 24, className = '' }: IconProps & { type: BlockType }) {
-  const Icon = BLOCK_ICONS[type] ?? Box
+export function BlockIcon({ type, size = 24, className = '' }: IconProps & { type: PieceType }) {
+  const Icon = PIECE_ICONS[type]
   return <Icon size={size} className={className} aria-hidden />
 }
 
-export function CategoryIcon({
-  category,
-  size = 20,
-  className = '',
-}: IconProps & { category: BlockCategory }) {
-  const Icon = CATEGORY_ICONS[category] ?? Box
+export function CategoryIcon({ kind, size = 20, className = '' }: IconProps & { kind: PieceKind }) {
+  const Icon = KIND_ICONS[kind]
   return <Icon size={size} className={className} aria-hidden />
 }

@@ -1,123 +1,115 @@
 # Building engine
 
-How pieces are sized, snapped, stacked and rejected. Everything here is enforced
-by the tests in `tests/`; if this file and the code disagree, the code wins and
-this file is a bug.
+How pieces attach, stack, collide and hold each other up. The engine lives in
+`engine/` — pure TypeScript with no React and no three.js — and every rule here
+is covered by the tests in `tests/`. If this file and the code disagree, the
+code wins and this file is a bug.
+
+## Sockets, not a grid
+
+Rust has no global building grid. Every piece hangs off a socket on a piece that
+is already there, and the engine works the same way:
+
+| Source                | Socket                   | Builds                                    |
+| --------------------- | ------------------------ | ----------------------------------------- |
+| Deck edge             | neighbour                | a deck of the same kind sharing that edge |
+| Deck edge             | wall base                | a wall standing on the edge               |
+| Full wall top         | wall base                | a wall one storey up                      |
+| Full or half wall top | floor edge (either side) | a floor whose top is flush with the wall  |
+
+A _deck_ is a foundation or a floor, square or triangle. Positions come from the
+source piece, so a triangle can hang off a triangle, a wall can stand on a 60°
+edge, and a whole base can follow a foundation placed at any angle.
+
+The first foundation stands on its own on the ground. With **Snap to grid** on
+it lands on a 3 m world grid cell (triangles on a 0.5 m grid); with it off it
+goes exactly where the cursor is. R turns it in 15° steps.
 
 ## Dimensions
 
-All of them live in `types/building-blocks.ts` and are exported as constants.
-Nothing re-declares them, so the collision maths and the rendered mesh cannot
-drift apart — that is checked in `tests/dimensions.test.ts`.
+All in `engine/constants.ts`.
 
-| Constant            | Value | Meaning                                      |
-| ------------------- | ----- | -------------------------------------------- |
-| `FOUNDATION_SIZE`   | 3     | Cell size, in metres. One square foundation. |
-| `FOUNDATION_HEIGHT` | 0.3   | Foundation slab thickness                    |
-| `WALL_HEIGHT`       | 3     | Full wall                                    |
-| `WALL_THICKNESS`    | 0.15  |                                              |
-| `FLOOR_HEIGHT`      | 0.2   |                                              |
-| `TRIANGLE_DEPTH`    | 1.5   | How far a triangle reaches past its edge     |
+| Constant            | Value | Meaning                                        |
+| ------------------- | ----- | ---------------------------------------------- |
+| `CELL`              | 3     | Edge of every square and triangle; wall length |
+| `STOREY`            | 3     | Full wall height and the step between floors   |
+| `FOUNDATION_HEIGHT` | 1     | Foundations are solid blocks                   |
+| `FLOOR_THICKNESS`   | 0.15  | Floors hang inside the top of their walls      |
+| `WALL_THICKNESS`    | 0.24  |                                                |
 
-Derived: `FOUNDATION_TOP` = 0.3, `WALL_TOP` = 3.3.
+Triangles are **equilateral** with 3 m sides, as in the game — six of them
+around a point close a hexagon. A piece's `x`/`z` is the centre of a square,
+the centroid of a triangle or the midpoint of a wall; `y` is its bottom.
 
-| Piece                         | Size (x, y, z) | Default centre Y |
-| ----------------------------- | -------------- | ---------------- |
-| Square foundation             | 3 × 0.3 × 3    | 0.15             |
-| Triangle foundation           | 3 × 0.3 × 1.5  | 0.15             |
-| Wall                          | 3 × 3 × 0.15   | 1.8              |
-| Half wall                     | 3 × 1.5 × 0.15 | 1.05             |
-| Low wall                      | 3 × 1 × 0.15   | 0.8              |
-| Doorway / window / wall frame | 3 × 3 × 0.15   | 1.8              |
-| Square floor                  | 3 × 0.2 × 3    | 3.4              |
-| Triangle floor                | 3 × 0.2 × 1.5  | 3.4              |
-| Floor frame                   | 3 × 0.2 × 3    | 3.4              |
+Levels: foundation tops at 1 m, then every 3 m — 4, 7, 10… Walls start on a
+level, floor tops sit on the next one.
 
-Piece categories come from the template, never from the name. `floor-frame` and
-`wall-frame` both contain "frame"; classifying by substring made a floor frame
-behave like a 3 m wall.
+## Aiming
 
-## The grid
+`solvePlacement(world, ray, tool)` is the one entry point, used by the ghost,
+by the click that builds and by the tests:
 
-Cells are 3 × 3 and centred on odd multiples of 1.5, so cell centres are at
-1.5, 4.5, 7.5, … and grid lines at 0, 3, 6, …
+1. Raycast the world (`engine/raycast.ts`: exact ray / prism tests, then the
+   ground plane).
+2. Collect the sockets of every piece near the ray, up to what it hit. Not only
+   near the hit point — aiming into the air above a wall puts the hit on the
+   ground far behind the base.
+3. Score each socket by how close the ray passes to the vertical axis of the
+   piece it would build. The ghost lands where the user is looking, on any
+   storey and from any camera angle.
+4. Fully validate the closest few; prefer a free socket over a blocked one
+   that is nearer by less than a metre.
 
-Only X and Z are ever snapped. Y is decided by stacking.
-
-- **Foundations and floors** snap to the nearest cell centre.
-- **Walls** snap to the nearest of the four edges of the cell under the cursor,
-  and auto-rotate: a wall on a vertical grid line runs north-south, otherwise
-  east-west.
-- **Triangles** attach to an edge of a square piece and point outwards.
-
-## Triangles
-
-A triangle is an isosceles prism whose base spans one full 3 m edge and whose
-apex reaches 1.5 m beyond it. It attaches to the nearest edge of the nearest
-square piece of the same category — a foundation triangle to a square
-foundation, a floor triangle to a square floor on the same storey — and its
-centroid lands `3/2 + 1.5/3 = 2 m` from that square's centre.
-
-The apex direction follows from the Y rotation as `(sin θ, cos θ)`: 0 points
-south (+Z), π/2 east, π north, −π/2 west.
-
-With nothing to attach to, the triangle falls back to the nearest empty cell and
-attaches to that.
-
-Attaching **outwards** matters. The earlier version snapped a triangle to a
-_corner_ of a square using a centroid offset, which put it inside the square it
-had just snapped to — an overlap that no rotation could fix.
-
-## Stacking
-
-`calculateYPosition` looks for the highest piece below the cursor and rests the
-new piece on top of it.
-
-- Foundations always sit on the ground.
-- Walls look only at their own edge, within 0.1 m, so a foundation in the middle
-  of a cell does not lift a wall on its edge. With nothing below, a wall falls
-  back to its default height, which already assumes a foundation underneath.
-- Floors look within 2.2 m, which reaches the walls around their cell.
-
-So a wall on a foundation is centred at 1.8, a floor on those walls at 3.4, and
-a second-storey wall on that floor stacks from the floor's top surface.
+With no socket within 2 m a foundation stands free; any other piece is shown at
+the cursor and marked unsupported.
 
 ## Collision
 
-Each piece claims one or more named horizontal **slots**. Two pieces collide when
-they claim the same slot _and_ their vertical spans genuinely overlap — touching
-exactly face to face is allowed, within a 0.05 m tolerance.
+Pieces are convex prisms. Two collide when their vertical spans overlap and
+their **shrunken** footprints overlap (separating axis test):
 
-| Piece                     | Slot                           |
-| ------------------------- | ------------------------------ |
-| Square foundation / floor | its grid cell                  |
-| Triangle                  | the whole cell it reaches into |
-| Wall                      | the cell edge it snapped to    |
+- decks are inset by 0.15 m — more than half a wall's thickness, so a wall on
+  a deck's edge never counts as intersecting it;
+- walls are shortened by 0.4 m at each end, so walls meeting at a 90° or 60°
+  corner do not intersect each other.
 
-Consequences worth knowing:
+Openings in doorways and frames are ignored; nothing can be built inside them.
 
-- Two foundations cannot share a cell; a foundation and a floor above it can.
-- Walls stack cleanly because their spans only touch.
-- A wall and a foundation never collide: they claim different kinds of slot.
-- A triangle cannot reach into a cell a square already fills.
-- Two triangles cannot share a cell even when they would geometrically fit.
-  That is a deliberate simplification, chosen because it can never allow a
-  visible overlap.
+## Stability
 
-Slot coordinates are quantised to two decimals, and `-0` is normalised to `0` —
-without that, a coordinate a hair below a grid line produced a different key and
-two walls on the same edge both passed the check.
+Foundations stand at 100%. Every other piece takes the best stability among the
+pieces holding it up, times a factor for how it is held:
 
-## resolvePlacement
+| Held up by → piece | Factor |
+| ------------------ | ------ |
+| foundation → wall  | 1.0    |
+| floor → wall       | 0.9    |
+| wall → wall        | 0.9    |
+| wall → floor       | 1.0    |
+| floor → floor      | 0.5    |
 
-The one entry point. Given the point where the cursor meets the ground plane it:
+A piece below 10% cannot be built. So a floor overhangs three tiles past its
+last wall (50%, 25%, 12.5%), and walls lose 10% per storey above the first.
+This reproduces the familiar limits; the factors are not datamined.
 
-1. snaps horizontally, using a probe height so that everything counts as "below";
-2. resolves Y by stacking at that position;
-3. snaps again now that the storey is known, which is what lets a floor triangle
-   find the square on its own level;
-4. computes the auto-rotation;
-5. checks collision.
+Stability for the whole base is a widest-path search from the foundations,
+computed once per world and cached.
 
-It returns `{ position, rotation, valid }`. The placement preview and the click
-handler both call it, so the ghost and the piece that gets built cannot differ.
+## Demolition
+
+Removing a piece also removes everything whose stability drops below 10%
+because of it — the same collapse the game does — as a single undoable step.
+The confirm dialog says how many pieces will come down.
+
+## Commands and history
+
+Every change goes through a command in `engine/commands.ts` that returns a
+`Patch` (`remove` + `add`) or `null` when the change is not allowed. The store
+applies patches and keeps them for undo/redo; it re-validates placements
+itself, so no part of the UI can build something the rules forbid.
+
+## Saving
+
+`serialize` writes `{ format, version: 2, pieces: [type, tier, x, y, z, yaw][] }`.
+The same format is used for `localStorage` and for exported files. `deserialize`
+skips malformed entries and rejects anything that is not a save.

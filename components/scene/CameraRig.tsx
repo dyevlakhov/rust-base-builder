@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
-import { ViewMode, useBuilderStore } from '@/store/useBuilderStore'
+import { ViewMode, useToolStore } from '@/store/useToolStore'
 import { isTypingTarget } from '@/utils/dom'
 
 export const VIEW_POSITIONS: Record<ViewMode, [number, number, number]> = {
@@ -35,8 +35,8 @@ type OrbitLikeControls = {
  * eased instead of snapped.
  */
 export function CameraRig() {
-  const viewMode = useBuilderStore((state) => state.viewMode)
-  const viewEpoch = useBuilderStore((state) => state.viewEpoch)
+  const viewMode = useToolStore((state) => state.viewMode)
+  const viewEpoch = useToolStore((state) => state.viewEpoch)
   const camera = useThree((state) => state.camera)
   const controls = useThree((state) => state.controls) as OrbitLikeControls | null
 

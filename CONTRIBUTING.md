@@ -26,14 +26,13 @@ npm test
 npm run build
 ```
 
-If you touched anything in `components/scene/`, `utils/geometry.ts`,
-`utils/textureLoader.ts` or the lighting, also work through
+If you touched anything in `components/scene/`, `render/` or the lighting, also work through
 [docs/VISUAL_QA.md](./docs/VISUAL_QA.md). The test suite cannot see the render,
 and the rendering bugs this project has had all built and typechecked cleanly.
 
 ## What to test
 
-Grid maths, placement rules and store behaviour are pure functions and belong in
+The building engine (`engine/`) and store behaviour are pure functions and belong in
 `tests/`. Rendering does not: a test asserting that a mesh exists proves nothing
 useful. Put that coverage in the visual checklist instead.
 
@@ -41,12 +40,13 @@ useful. Put that coverage in the visual checklist instead.
 
 - Prettier and ESLint are the arbiters; run `npm run format`.
 - Prefer deriving values over restating them. Block dimensions live in exactly
-  one place, `types/building-blocks.ts`, and everything else reads from there —
+  one place, `engine/constants.ts`, and everything else reads from there —
   the two tables that used to exist had already drifted apart by 5 cm.
-- Classify block types by their template's `category`, never by matching a
+- Classify pieces by their catalog `kind` and `shape`, never by matching a
   substring of the type name.
-- Keep the placement rules inside `resolvePlacement`. The preview, the click
-  handler and the store must not each work out placement for themselves.
+- Keep building rules inside `engine/`. The ghost, the click handler and the
+  store all go through `solvePlacement` and the commands; none of them works
+  out placement for itself.
 
 ## Ideas
 

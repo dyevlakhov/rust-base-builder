@@ -1,22 +1,26 @@
 # Textures
 
-This directory is empty by design. Every material is generated procedurally at
-runtime, so the app renders with surface detail without shipping any assets.
+One folder per building tier, each with three 1K maps:
 
-To use real PBR maps instead, drop files in here named
-`{tier}_{category}_{map}.jpg`:
+- `color.jpg` — base colour (sRGB)
+- `normal.jpg` — OpenGL-convention normal map
+- `arm.jpg` — packed ambient occlusion (R), roughness (G), metalness (B)
 
-- **tiers** — `twig`, `wood`, `stone`, `metal`, `armored`
-- **categories** — `foundation`, `wall`, `floor`
-- **maps** — `diffuse`, `normal`, `roughness`, `metalness`
+They are loaded by `render/materials.ts`, which also sets how many metres one
+texture tile covers so each surface tiles at its real-world size.
 
-For example, `stone_wall_diffuse.jpg`.
+## Sources
 
-Any file present is used; anything missing falls back to the generated version,
-so a partial set is fine. Restart the dev server after adding files.
+All maps are **CC0** photoscans from [Poly Haven](https://polyhaven.com), picked
+to read like each tier in Rust, then recompressed:
 
-Full notes, including where to find CC0 sources, are in
-[docs/MATERIALS.md](../../docs/MATERIALS.md).
+| Tier    | Poly Haven asset                                                     | Authors                              |
+| ------- | -------------------------------------------------------------------- | ------------------------------------ |
+| twig    | [bark_willow_02](https://polyhaven.com/a/bark_willow_02)             | Charlotte Baglioni                   |
+| wood    | [weathered_planks](https://polyhaven.com/a/weathered_planks)         | Dario Barresi, Dimitrios Savva       |
+| stone   | [castle_wall_slates](https://polyhaven.com/a/castle_wall_slates)     | Rob Tuytel                           |
+| metal   | [worn_corrugated_iron](https://polyhaven.com/a/worn_corrugated_iron) | Jenelle van Heerden, Dimitrios Savva |
+| armored | [metal_plate_02](https://polyhaven.com/a/metal_plate_02)             | Rob Tuytel                           |
 
 Do not add extracted game assets. This is a fan tool with no licence to
 redistribute Facepunch's artwork.

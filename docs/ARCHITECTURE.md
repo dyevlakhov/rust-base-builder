@@ -1,101 +1,102 @@
 # Architecture
 
-A single-page Next.js app. There is no backend, no API and no database: the whole
-design lives in one Zustand store and is mirrored to `localStorage`.
+A single-page Next.js app with no backend. Three layers, each depending only on
+the ones below it:
+
+```
+ui (components/, hooks/)        panels, HUD, shortcuts
+  │
+store/                          React-facing state: the base + history, the tool
+  │
+render/ + components/scene/     three.js meshes, materials, the build controller
+  │
+engine/                         pure TypeScript: pieces, sockets, collision,
+                                stability, raycast, commands, saving
+```
+
+`engine/` imports nothing from React or three.js. Everything that decides what
+can be built lives there and is unit tested.
 
 ## Layout
 
 ```
-app/
-  layout.tsx              Metadata, fonts, global CSS
-  page.tsx                The only route: header, palette, canvas, details panel
-components/
-  Header.tsx              View modes, resource totals, export, clear
-  BlockPalette.tsx        Tier picker and the list of placeable pieces
-  BlockDetailsPanel.tsx   Inspector for the selected piece
-  BlockIcon.tsx           Icon lookup for block types and categories
-  Scene3D.tsx             <Canvas>, ground plane, grid, HUD overlays
-  scene/
-    CameraRig.tsx         View-mode framing and arrow-key panning
-    SceneEnvironment.tsx  Lights, sky, and the generated environment map
-    BuildingBlockMesh.tsx One placed piece
-    PlacementPreview.tsx  The ghost that follows the cursor
-  ui/
-    ConfirmDialog.tsx     Replacement for window.confirm
-    NumberField.tsx       Number input that does not fight the user
-hooks/
-  useAppShortcuts.ts      Escape and Delete
-  useHydrated.ts          First-render guard for persisted data
+engine/
+  constants.ts      Canonical dimensions
+  catalog.ts        Piece types, tiers, cost and health
+  math.ts           Vectors, angles, SAT, ray distances
+  pieces.ts         Piece model, footprints, deck edges, bounds
+  world.ts          Immutable World, spatial hash, patches
+  support.ts        Who holds whom up; stability
+  collision.ts      Overlap test
+  raycast.ts        Ray against pieces and the ground
+  placement.ts      Sockets and solvePlacement
+  commands.ts       place / remove (with collapse) / setTier / clear / replace
+  serialize.ts      Save format
 store/
-  useBuilderStore.ts      Blocks, selection, tier, view mode; persistence
-  useConfirmStore.ts      Pending confirmation request
-types/
-  building-blocks.ts      Block types, canonical dimensions, tier properties
-utils/
-  snapUtils.ts            Grid snapping and triangle attachment
-  placementUtils.ts       Heights, stacking, collision, resolvePlacement
-  geometry.ts             Shared unit geometries
-  textureLoader.ts        PBR maps, with procedural fallbacks
-  resources.ts            Cost formatting and totals
-  dom.ts                  Small DOM helpers
-tests/                    Vitest suite for the pure logic
+  useDesignStore.ts The World, undo/redo, persistence
+  useToolStore.ts   Active piece, tier, rotation, snap, selection, view mode
+  useConfirmStore.ts
+render/
+  geometry.ts       Extruded meshes per piece type, with real openings
+  materials.ts      One PBR material per tier
+components/
+  Scene3D.tsx       Canvas, grid, HUD
+  scene/
+    Pieces.tsx            One memoised mesh per piece
+    BuildController.tsx   Pointer → engine raycast → ghost / build / select
+    SelectionOutline.tsx
+    CameraRig.tsx, SceneEnvironment.tsx
+  Header.tsx, BlockPalette.tsx, BlockDetailsPanel.tsx, ...
+tests/              Vitest: engine and store
 ```
 
 ## Data flow
 
 ```
-BlockPalette ──sets placementMode──▶ store
-                                      │
-                            PlacementPreview reads it,
-                            raycasts the ground each frame,
-                            and calls resolvePlacement()
-                                      │
-                                      ▼
-                        { position, rotation, valid }
-                                      │
-    click on the ground plane ────────┴──▶ store.addBlock()
-                                                  │
-                                                  ▼
-                                   BuildingBlockMesh per block
+pointer ──▶ BuildController ──ray──▶ solvePlacement(world, ray, tool)
+                 │                         │
+                 │◀──── Placement ─────────┘   ghost drawn every frame
+                 │
+     click ──────┴──▶ useDesignStore.place(spec)
+                              │  placeCommand re-validates
+                              ▼
+                         Patch ──▶ applyPatch ──▶ new World
+                              │                      │
+                         past / future          Pieces re-render
+                         (undo / redo)          only what changed
 ```
-
-The important part is that the preview and the click handler call the **same**
-`resolvePlacement`. In the original code the snap, the height, the auto-rotation
-and the collision check were each written out three times — in the preview, in
-the click handler and in the store — and the copies had already drifted apart.
 
 ## State
 
-`useBuilderStore` holds `blocks`, `selectedBlockId`, `currentTier`, `viewMode`,
-`snapToGrid` and `placementMode`. Components subscribe field by field so that
-placing a piece does not re-render the palette.
+The base is an immutable `World`: a map of pieces plus a spatial hash. Each
+change produces a new `World` from a `Patch`, so:
 
-Anything on the hot path reads the store imperatively with
-`useBuilderStore.getState()` rather than subscribing — the per-frame preview and
-the click handler both do this, so they never need to be rebuilt when a piece is
-added.
+- derived data — stability, piece lists — is cached per `World` in a `WeakMap`;
+- history is a list of patches, inverted for undo;
+- pieces that did not change keep their object identity, and `memo` skips their
+  meshes.
 
-`blocks`, `currentTier` and `snapToGrid` are persisted. Because the store
-restores itself as soon as its module is evaluated, anything that prints
-persisted data into the DOM guards its first render with `useHydrated`, or React
-reports a hydration mismatch.
+Hot paths read stores imperatively (`getState()`) instead of subscribing: the
+per-frame ghost, the click handler and the keyboard shortcuts.
+
+Only the base is persisted (in the save format), plus the tier and snap
+preferences. Components that print persisted data guard their first render
+with `useHydrated` to avoid a hydration mismatch.
 
 ## Rendering
 
-- Every piece is a unit-sized geometry stretched by the mesh `scale`, so one
-  `BoxGeometry` and one triangular prism are shared by the whole scene.
-- The triangular prism is built with `ExtrudeGeometry` so that winding, normals
-  and UVs are generated rather than hand-written.
-- Image-based lighting comes from three's own `RoomEnvironment`, pre-filtered
-  once with `PMREMGenerator`. drei's `Environment preset` was deliberately
-  dropped: it fetches an HDRI from a third-party CDN at runtime.
-- The placement preview writes straight to the three.js objects inside
-  `useFrame` instead of going through React state.
+- Picking goes through the engine's raycast, not three.js meshes. The renderer
+  is free to draw pieces however it likes.
+- Geometry is extruded from 2D outlines: doorways, windows and frames have real
+  openings, edges are bevelled, and UVs are in metres so textures tile at real
+  size on every face. One geometry per piece type, shared by all pieces.
+- One material per tier, shared by all pieces (see [MATERIALS.md](./MATERIALS.md)).
+- The ghost and hover outline are moved by writing to three.js objects in
+  `useFrame`, never through React state.
 
-## Deliberate limitations
+## Known limits
 
-- No undo/redo.
-- Import is not implemented; export writes JSON.
-- Health is a property of the tier, not a simulation — nothing damages a piece.
-- A triangle claims the whole cell it reaches into, so two triangles never share
-  a cell even where they would geometrically fit.
+- One mesh per piece. Instancing (one draw call per type × tier) is the next
+  rendering step.
+- No stairs, roofs, doors or deployables yet; no upkeep or raid cost.
+- Health is a tier property; nothing damages a piece.

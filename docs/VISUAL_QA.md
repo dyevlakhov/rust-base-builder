@@ -37,10 +37,13 @@ over part of it. Keep it, it is reused below.
 The one that breaks most often. Check every tier.
 
 - [ ] Twig reads as pale tan with a stick pattern.
-- [ ] Wood reads as mid brown with plank grain.
-- [ ] Stone reads as grey with visible aggregate.
-- [ ] Sheet Metal reads as blue-grey with corrugation and a highlight.
-- [ ] Armored reads as olive-green, still legible rather than black.
+- [ ] Twig reads as pale bark / sticks.
+- [ ] Wood reads as weathered planks.
+- [ ] Stone reads as grey stacked slate.
+- [ ] Sheet Metal reads as grey corrugated iron, not white.
+- [ ] Armored reads as dark heavy plates, still legible rather than black.
+- [ ] Textures tile at the same scale on a wall face, a wall edge and a
+      foundation side — nothing is stretched.
 - [ ] No tier is washed out to white, and none is crushed to black.
 - [ ] Surface detail is visible on all of them. Flat, untextured colour means
       the maps loaded but the material was not flagged `needsUpdate`.
@@ -49,27 +52,29 @@ The one that breaks most often. Check every tier.
 
 - [ ] A triangle foundation is lit, not black. Black means the geometry lost its
       vertex normals.
-- [ ] It sits **outside** the square it attached to, flush against that edge,
-      with no overlap.
-- [ ] Moving the cursor around a square swings it between all four edges, and it
-      rotates to face outwards each time.
+- [ ] It is equilateral and sits **outside** the piece it attached to, flush
+      against that edge.
+- [ ] Triangles chain off triangles; six around a point close a hexagon.
+- [ ] A wall snaps onto a triangle's slanted edge at 60°.
 - [ ] A floor triangle attaches to a floor on its own storey, not to the
       foundation below.
 
 ## Placement preview
 
 - [ ] The ghost follows the cursor without lag.
-- [ ] It is tinted the current tier's colour where placement is legal, and red
-      where it is not.
-- [ ] Its orange outline is visible.
-- [ ] Walls show the small cone marking their facing.
+- [ ] It is blue where placement is legal and red where it is not, and the HUD
+      gives the reason and the stability.
+- [ ] On an upper storey, from a low camera angle, the ghost lands where the
+      cursor points.
+- [ ] R flips a wall ghost.
 - [ ] The piece that appears on click matches the ghost exactly, in position and
       rotation.
+- [ ] Dragging to orbit does not build a piece.
 
 ## Selection
 
 - [ ] Clicking a piece selects it and opens the inspector.
-- [ ] The selected piece gets a yellow outline and a slow pulse.
+- [ ] The selected piece gets a yellow outline, visible through other pieces.
 - [ ] The outline follows the triangle silhouette on a triangle, not a box.
 - [ ] Clicking empty ground clears the selection.
 - [ ] Hovering highlights, and stops highlighting while placing.
@@ -80,16 +85,16 @@ The one that breaks most often. Check every tier.
 - [ ] TOP, FRONT and SIDE each move the camera, eased rather than snapped.
 - [ ] Clicking the **already active** view button re-frames the scene.
 - [ ] Arrow keys pan, and the direction matches the label — right goes right.
-- [ ] Arrow keys inside the inspector's number fields edit the number and do not
-      move the camera.
 - [ ] The camera cannot be orbited below the ground.
 
 ## Interface
 
-- [ ] Resource totals in the header match the pieces placed, gears included.
-- [ ] Editing X/Y/Z in the inspector works, and typing a decimal is not fought
-      by re-rendering.
-- [ ] A value like `0.15` is displayed as `0.15`, not rounded to `0.1`.
+- [ ] Resource totals in the header match the pieces placed; triangles cost half.
+- [ ] The inspector shows stability, and demolishing warns how many pieces
+      will collapse with it.
+- [ ] Undo / redo buttons and Ctrl+Z / Ctrl+Shift+Z work, including after a
+      demolition.
+- [ ] Export, then Import, restores the same base.
 - [ ] Clear and Demolish open the styled dialog, never a browser `confirm`.
 - [ ] Escape closes the dialog; Escape cancels placement mode.
 - [ ] Delete demolishes the selected piece, via the dialog.
@@ -103,6 +108,6 @@ The one that breaks most often. Check every tier.
 ## Performance
 
 - [ ] Around fifty pieces still feels smooth while orbiting.
-- [ ] Placing a piece does not stutter. A hitch here means procedural textures
-      are being regenerated per block instead of per tier.
+- [ ] Placing a piece does not stutter. Only the new piece's mesh should
+      re-render.
 - [ ] The console is clean. No warnings, and no leftover logging.

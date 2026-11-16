@@ -1,43 +1,34 @@
-import { BuildingBlock, ResourceCost, TIER_PROPERTIES } from '@/types/building-blocks'
+import { Piece, ResourceCost, pieceCost } from '@/engine'
 
-export const RESOURCE_LABELS: Record<keyof ResourceCost, { icon: string; name: string }> = {
-  wood: { icon: '🪵', name: 'Wood' },
-  stone: { icon: '🪨', name: 'Stone' },
-  metalFragments: { icon: '⚙️', name: 'Metal Fragments' },
-  hqm: { icon: '💎', name: 'High Quality Metal' },
-  gears: { icon: '🔩', name: 'Gears' },
+export const RESOURCE_LABELS: Record<keyof ResourceCost, { short: string; name: string }> = {
+  wood: { short: 'Wood', name: 'Wood' },
+  stone: { short: 'Stone', name: 'Stone' },
+  metalFragments: { short: 'Frags', name: 'Metal Fragments' },
+  hqm: { short: 'HQM', name: 'High Quality Metal' },
 }
 
 const RESOURCE_KEYS = Object.keys(RESOURCE_LABELS) as (keyof ResourceCost)[]
 
-/** Human readable one-line cost, e.g. "200 Metal Fragments + 25 HQM". */
+/** One line, e.g. "200 Metal Fragments". */
 export function formatCost(cost: ResourceCost): string {
-  const parts = RESOURCE_KEYS.filter((key) => cost[key]).map((key) => {
-    const label = key === 'hqm' ? 'HQM' : RESOURCE_LABELS[key].name
-    return `${cost[key]} ${label}`
-  })
-  return parts.join(' + ')
+  return RESOURCE_KEYS.filter((key) => cost[key])
+    .map((key) => `${cost[key]} ${key === 'hqm' ? 'HQM' : RESOURCE_LABELS[key].name}`)
+    .join(' + ')
 }
 
-/** Sum the per-piece tier cost across every placed block. */
-export function getTotalCost(blocks: BuildingBlock[]): ResourceCost {
+export function getTotalCost(pieces: Iterable<Piece>): ResourceCost {
   const total: ResourceCost = {}
-
-  for (const block of blocks) {
-    const cost = TIER_PROPERTIES[block.tier].cost
+  for (const piece of pieces) {
+    const cost = pieceCost(piece.type, piece.tier)
     for (const key of RESOURCE_KEYS) {
       const amount = cost[key]
       if (amount) total[key] = (total[key] ?? 0) + amount
     }
   }
-
   return total
 }
 
-/** Non-zero entries of a cost, ready for rendering. */
-export function costEntries(
-  cost: ResourceCost
-): { key: keyof ResourceCost; amount: number; icon: string; name: string }[] {
+export function costEntries(cost: ResourceCost) {
   return RESOURCE_KEYS.filter((key) => cost[key]).map((key) => ({
     key,
     amount: cost[key]!,
